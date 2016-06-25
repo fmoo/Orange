@@ -23,5 +23,8 @@ public static class ComponentUtils {
 			return g;
 		}
 	}
-	
+
+	public static GameObject GetChildObject(this Component c, string name) {
+		return c.gameObject.GetChildObject(name);
+	}
 }
