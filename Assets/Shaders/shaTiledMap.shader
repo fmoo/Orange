@@ -1,4 +1,6 @@
-﻿/**
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+/**
  * Modified Tiled/TextureTintSnap shader that supports receiving shadows
  * from directional light sources.
  *
@@ -72,7 +74,7 @@ Shader "Orange/Tiled/TextureTintSnap"
             v2f vert(appdata_full IN)
             {
                 v2f OUT;
-                OUT.pos = mul(UNITY_MATRIX_MVP, IN.vertex);
+                OUT.pos = UnityObjectToClipPos(IN.vertex);
                 OUT.texcoord = IN.texcoord;
                 OUT.color = IN.color * _Color;
                 #ifdef PIXELSNAP_ON

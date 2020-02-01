@@ -1,4 +1,6 @@
-﻿// Adapted from the built-in Sprites-Default.shader
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+// Adapted from the built-in Sprites-Default.shader
 // You can download the source for the built-in shaders from:
 // http://unity3d.com/unity/download/archive
 
@@ -82,7 +84,7 @@ Shader "Orange/Sprites/SkewShader"
 					0,    0,    0, 1);
 				
 				float4 skewedVertex = mul(transformMatrix, IN.vertex);
-				OUT.vertex = mul(UNITY_MATRIX_MVP, skewedVertex);
+				OUT.vertex = UnityObjectToClipPos(skewedVertex);
 				
 				#ifdef PIXELSNAP_ON
 				OUT.vertex = UnityPixelSnap (OUT.vertex);
