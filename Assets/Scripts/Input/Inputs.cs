@@ -13,7 +13,15 @@ public sealed class InputAxis : InputBase {
 	public static InputAxis HORIZONTAL = new InputAxis("Horizontal");
 	public static InputAxis VERTICAL = new InputAxis("Vertical");
 
-	public InputAxis(string name) : base(name) { }
+    public static Vector2 GetVector2() {
+        return new Vector2(InputAxis.HORIZONTAL.Get, InputAxis.VERTICAL.Get);
+    }
+    public static Vector2 GetVector2Raw() {
+        return new Vector2(InputAxis.HORIZONTAL.Raw, InputAxis.VERTICAL.Raw);
+    }
+
+
+    public InputAxis(string name) : base(name) { }
 
 	public float Get {
 		get { return Input.GetAxis(Name); }

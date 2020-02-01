@@ -7,7 +7,7 @@ using System.Collections.Generic;
  * Attach this behavior to an object with a UIText to cause the text to
  * gradually appear instead of appearing all at once.
  */
-public class GraduallyAppearingText : FinishableBehavior {
+public class GraduallyAppearingText : MonoBehaviour {
 	private float timeElapsed = 0.0f;
 	private bool done = false;
 
@@ -45,7 +45,7 @@ public class GraduallyAppearingText : FinishableBehavior {
 		timeElapsed = 0.0f;
 	}
 
-	override public bool IsFinished() {
+	public bool IsFinished() {
 		return done;
 	}
 

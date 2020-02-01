@@ -38,20 +38,20 @@ Shader "Orange/Tiled/TextureTintSnap"
 
         Pass
         {
-          Name "FORWARD"
-          Tags {
-            "LightMode" = "ForwardBase"
-          }
+			Name "FORWARD"
+			Tags {
+				"LightMode" = "ForwardBase"
+			}
 
         CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile_fwdbase DUMMY PIXELSNAP_ON
+            #pragma multi_compile_fwdbase DUMMY
+			#pragma multi_compile _ PIXELSNAP_ON
 
-#include "HLSLSupport.cginc"
-            #include "UnityCG.cginc"
-#include "Lighting.cginc"
-#include "AutoLight.cginc"
+
+			#include "Lighting.cginc"
+			#include "AutoLight.cginc"
 
             struct appdata_t
             {

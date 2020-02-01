@@ -3,7 +3,7 @@ using System.Collections;
 
 public static class ComponentUtils {
 
-	public static T GetOrCreateComponent<T>(this Component c) where T : Component  {
+    public static T GetOrCreateComponent<T>(this Component c) where T : Component  {
 		T component = c.GetComponent<T> ();
 		if (component == null) {
 			component = c.gameObject.AddComponent<T>();
@@ -24,7 +24,7 @@ public static class ComponentUtils {
 		}
 	}
 
-	public static GameObject GetChildObject(this Component c, string name) {
-		return c.gameObject.GetChildObject(name);
+	public static GameObject FindObject(this Component c, string name) {
+		return c.gameObject.FindObject(name);
 	}
 }

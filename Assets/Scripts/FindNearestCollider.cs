@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
+using System.Collections.Generic;
 
 public class FindNearestCollider : MonoBehaviour {
 	private HashSet<GameObject> _Objects = new HashSet<GameObject>();

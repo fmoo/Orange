@@ -4,19 +4,25 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: BumpDiffuseWithShadow
-  m_Shader: {fileID: 4800000, guid: 230b644a4004047e7819ef526ab3f90a, type: 3}
+  m_Shader: {fileID: 4800000, guid: 849e1d7e160d5834ea6eab8bc455121b, type: 3}
   m_ShaderKeywords: ETC1_EXTERNAL_ALPHA PIXELSNAP_ON
   m_LightmapFlags: 5
   m_EnableInstancingVariants: 0
-  m_CustomRenderQueue: 3000
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BackTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -93,13 +99,15 @@ Material:
     - PixelSnap: 1
     - _BumpScale: 1
     - _ColorMask: 15
-    - _Cutoff: 0.498
+    - _Cutoff: 0.7
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _EnableExternalAlpha: 0
     - _Exposure: 1
     - _Fudge: 0.35
     - _Glossiness: 0.5
     - _HorizontalSkew: 0
+    - _MaxAttenuation: 0.5
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -120,5 +128,7 @@ Material:
     - _AlphaColorKey: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _Flip: {r: 1, g: 1, b: 1, a: 1}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     - _Tint: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}

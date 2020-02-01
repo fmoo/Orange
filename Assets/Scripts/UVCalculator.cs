@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class UVCalculator
-{
+public class UVCalculator {
 	private int rows, cols;
 	public UVCalculator (int rows, int cols) {
 		this.rows = rows;

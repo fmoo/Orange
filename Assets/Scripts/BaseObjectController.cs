@@ -33,26 +33,7 @@ abstract public class BaseObjectController : GameBehavior {
 	virtual protected float GetShadowOffset() {
 		return 0.35f;
 	}
-
-	protected Sprite GetSprite(
-		string template_name,
-		string group_name,
-		int index
-	) {
-		return SpriteCollection.Cached ("Sprites/" + template_name + "/" + group_name).GetSprite (group_name + "_" + index);
-	}
-
-  protected List<Sprite> GetSprites(
-    string template_name,
-    string group_name,
-    int num_sprites
-  ) {
-    var result = new List<Sprite>(num_sprites);
-    for (var i = 0; i < num_sprites; i++) {
-      result.Add(GetSprite(template_name, group_name, i));
-    }
-    return result;
-  }
+    
 
 	virtual protected void _InitForEditor()  {
 		// Adjust the scale according to these settings
@@ -75,9 +56,9 @@ abstract public class BaseObjectController : GameBehavior {
 		// Add the shadow subobject
 		if (this.shadowMode == ShadowMode.SPRITE_SKEW_SHADER) {
 			GameObject shadow = GetOrCreateGameObject ("shadow");
-			var copyfrom = GameObjectUtils.GetOrCreateComponent<CopySpriteFrom> (shadow);
+			var copyfrom = shadow.GetOrCreateComponent<CopySpriteFrom>();
 			copyfrom.SourceObject = this.gameObject.transform;
-			var r = GameObjectUtils.GetOrCreateComponent<SpriteRenderer> (shadow);
+			var r = shadow.GetOrCreateComponent<SpriteRenderer>();
 			r.sprite = sr.sprite;
 			r.material = Resources.Load<Material> ("Materials/ShadowMaterial");
 			r.sortingLayerName = SHADOW_SORT_LAYER;
@@ -90,10 +71,10 @@ abstract public class BaseObjectController : GameBehavior {
 			GameObject shadow = GetOrCreateGameObject ("shadow-caster");
 			shadow.transform.localRotation = Quaternion.AngleAxis(-90, Vector3.right);
 
-			var copyfrom = GameObjectUtils.GetOrCreateComponent<CopySpriteFrom> (shadow);
-			copyfrom.SourceObject = this.gameObject.transform;
+			var copyfrom = shadow.GetOrCreateComponent<CopySpriteFrom>();
+			copyfrom.SourceObject = gameObject.transform;
 
-			var r = GameObjectUtils.GetOrCreateComponent<SpriteRenderer> (shadow);
+			var r = shadow.GetOrCreateComponent<SpriteRenderer>();
 			r.sprite = sr.sprite;
 			r.material = Resources.Load<Material> ("Materials/BumpDiffuseWithShadow");
 			r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
