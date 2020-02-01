@@ -1,15 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CameraFollow : MonoBehaviour {
+public class OrangeCameraFollow : MonoBehaviour {
 	public Collider2D actor;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
 	void Update () {
 		// This approach kind of sucks. Ideally we'd have some sort of
 		// bounding rectangle and if the player moves outside of it, we move
