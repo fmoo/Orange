@@ -18,7 +18,7 @@ public static class GameObjectUtils {
 		}
 		return component;
 	}
-	
+
 	public static GameObject GetOrCreateGameObject(this GameObject o, string name) {
 		Transform t = o.transform.Find (name);
 		if (t != null) {
