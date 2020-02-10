@@ -17,7 +17,7 @@ namespace Orange {
         }
 
         private static readonly DirFlags[] DIR_FLAGS = { DirFlags.UP, DirFlags.DOWN, DirFlags.LEFT, DirFlags.RIGHT };
-        private static readonly Vector2Int[] DIRECTIONS =
+        public static readonly Vector2Int[] DIRECTIONS =
             { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
 
         private static Vector2Int GetDirectionForFlag(DirFlags flag) {

@@ -11,12 +11,17 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     private new OrangeSpriteManagerAnimation animation;
     private float timeElapsed = 0f;
 
+    public void SetAnimation(string name) {
+        this.name = name;
+        animation = sprites.GetAnimation(name);
+    }
+
     // Start is called before the first frame update
     void Start() {
         if (!active) {
             return;
         }
-        animation = sprites.GetAnimation(name);
+        SetAnimation(name);
     }
 
     void OnValidate() {
