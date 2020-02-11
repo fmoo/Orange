@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public static class RectTransformUtils {
+public static class RectTransformExtensions {
     
 	public static void ExpandToFillParent(this RectTransform rt) {
 		rt.anchorMin = Vector2.zero;

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public static class ComponentUtils {
+public static class ComponentExtensions {
 
     public static T GetOrCreateComponent<T>(this Component c) where T : Component  {
 		T component = c.GetComponent<T> ();
