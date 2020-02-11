@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 [ExecuteInEditMode]
 public class OrangeCanvasHelper : MonoBehaviour {
@@ -28,12 +29,12 @@ public class OrangeCanvasHelper : MonoBehaviour {
 
     public void DisableSelectable(Selectable selectable) {
         selectable.interactable = false;
-        if (selectable == UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject) {
+        if (selectable == EventSystem.current.currentSelectedGameObject) {
             var selectables = GetUISelectables();
             if (selectables.Length > 0) {
-                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(selectables[0].gameObject);
+                EventSystem.current.SetSelectedGameObject(selectables[0].gameObject);
             } else {
-                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+                EventSystem.current.SetSelectedGameObject(null);
                 uiCursor.gameObject.SetActive(false);
             }
         }

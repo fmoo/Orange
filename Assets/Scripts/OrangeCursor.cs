@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class OrangeCursor : MonoBehaviour {
     private RectTransform rectTransform;
@@ -17,10 +18,11 @@ public class OrangeCursor : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        var currentSelection = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+        var currentSelection = EventSystem.current.currentSelectedGameObject;
         if (currentSelection == null) {
             return;
         }
+        // TODO: Add a flag to support *animating* movement / size to the new values
         rectTransform.position = currentSelection.transform.position;
         rectTransform.sizeDelta = padding + currentSelection.GetComponent<RectTransform>().sizeDelta * scaleCoeff ;
     }
