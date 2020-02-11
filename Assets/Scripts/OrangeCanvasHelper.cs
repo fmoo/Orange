@@ -27,11 +27,9 @@ public class OrangeCanvasHelper : MonoBehaviour {
         var referenceHeight = camera.refResolutionY;
         if (Screen.height == lastHeight && referenceHeight == lastReferenceHeight) return;
         if (referenceHeight <= 0) return;
-        Debug.Log(Screen.height + "..." + lastHeight);
         canvasScaler = gameObject.GetOrCreateComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
         canvasScaler.scaleFactor = Screen.height / referenceHeight;
-        Debug.Log("Height=" + Screen.height + "  refHeight=" + referenceHeight);
         lastHeight = Screen.height;
         lastReferenceHeight = referenceHeight;
     }
