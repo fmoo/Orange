@@ -84,8 +84,6 @@ public class OrangeCanvasHelper : MonoBehaviour {
         uiPanel.gameObject.SetActive(true);
         if (GetUIHasSelectables()) {
             ShowCursor();
-        } else {
-            Debug.Log("UI Panel shown without any interactable selectables??");
         }
         if (GetAnyUIVisible()) {
             // TODO: Hide all of disableObjectsForUI ?

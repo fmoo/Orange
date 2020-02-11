@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Orange {
@@ -117,6 +118,50 @@ namespace Orange {
                 }
             }
             return result;
+        }
+    }
+
+    public class RestrictedTraversal {
+        private IEnumerable<Vector2Int> restrictedTiles;
+        public RestrictedTraversal(IEnumerable<Vector2Int> restrictedTiles) {
+            this.restrictedTiles = restrictedTiles;
+        }
+
+        private System.Func<Vector2Int, bool> GetFilterForDirection(Vector2Int source, Directions4 d) {
+            switch (d) {
+                case Directions4.UP:
+                    return (p) => p.y > source.y;
+                case Directions4.DOWN:
+                    return (p) => p.y < source.y;
+                case Directions4.LEFT:
+                    return (p) => p.x < source.x;
+                case Directions4.RIGHT:
+                    return (p) => p.x > source.x;
+            }
+            throw new UnityException("Invalid direction: " + d);
+        }
+
+        public Vector2Int GetNearestCursorPosition(Vector2Int source) {
+            try {
+                return restrictedTiles
+                    .OrderBy((p) => (p - source).sqrMagnitude)
+                    .First();
+            } catch (System.InvalidOperationException) {
+                Debug.LogWarning("There are no positions available?!");
+                return source;
+            }
+        }
+
+        public Vector2Int GetNextCursorPosition(Vector2Int source, Directions4 d) {
+            // TODO: What happens if there is no "First"???
+            try {
+                return restrictedTiles
+                    .Where(GetFilterForDirection(source, d))
+                    .OrderBy((p) => (p - source).sqrMagnitude)
+                    .First();
+            } catch (System.InvalidOperationException) {
+                return source;
+            }
         }
     }
 }
