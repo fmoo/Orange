@@ -58,13 +58,13 @@ public class OrangeCanvasHelper : MonoBehaviour {
     }
 
     public void ShowCursor() {
-        uiCursor.gameObject.SetActive(true);
         if (EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>()?.interactable != true) {
             var selectables = GetUISelectables();
             if (selectables.Count > 0) {
                 selectables[0].Select();
             }
         }
+        uiCursor.gameObject.SetActive(true);
     }
     public void HideCursor() {
         uiCursor.gameObject.SetActive(false);
