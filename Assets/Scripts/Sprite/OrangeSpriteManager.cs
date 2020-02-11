@@ -65,6 +65,11 @@ public class OrangeSpriteManagerSprite {
         renderer.flipX = flip;
         renderer.sprite = sprite;
     }
+    public void SetUIImageSprite(UnityEngine.UI.Image uiImage) {
+        // TODO: How to flip UI Image?
+        // uiImage.flipX = flip;
+        uiImage.sprite = sprite;
+    }
 }
 
 [System.Serializable]

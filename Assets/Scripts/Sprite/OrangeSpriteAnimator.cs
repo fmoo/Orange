@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class OrangeSpriteAnimator : MonoBehaviour {
+    public new string name;
     public bool active = true;
     public OrangeSpriteManager sprites;
     public new SpriteRenderer renderer;
-    public new string name;
+    public UnityEngine.UI.Image image;
 
     private new OrangeSpriteManagerAnimation animation;
     private float timeElapsed = 0f;
@@ -25,14 +26,16 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     }
 
     void OnValidate() {
-        if (!active) {
-            return;
-        }
+        if (!active) return;
+        if (sprites == null) return;
+
         var anim = sprites.GetAnimation(name);
-        if (anim == null) {
-            return;
-        }
-        anim.GetSpriteForIndex(0).SetRendererSprite(renderer);
+        if (anim == null) return;
+
+        if (renderer != null)
+            anim.GetSpriteForIndex(0).SetRendererSprite(renderer);
+        if (image != null)
+            anim.GetSpriteForIndex(0).SetUIImageSprite(image);
     }
 
     // Update is called once per frame
@@ -41,6 +44,9 @@ public class OrangeSpriteAnimator : MonoBehaviour {
             return;
         }
         timeElapsed += Time.deltaTime;
-        animation.GetSpriteForTime(timeElapsed).SetRendererSprite(renderer);
+        if (renderer != null)
+            animation.GetSpriteForTime(timeElapsed).SetRendererSprite(renderer);
+        if (image != null)
+            animation.GetSpriteForTime(timeElapsed).SetUIImageSprite(image);
     }
 }
