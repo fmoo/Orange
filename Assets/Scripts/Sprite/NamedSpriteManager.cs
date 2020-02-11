@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Obsolete("Use OrangeSpriteManager instead.")]
 public class NamedSpriteManager : MonoBehaviour {
     private Dictionary<string, Sprite> namedSprites = new Dictionary<string, Sprite>();
     private Dictionary<string, NamedSpriteAnimation> namedAnimations = new Dictionary<string, NamedSpriteAnimation>();

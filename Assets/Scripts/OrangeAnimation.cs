@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+[System.Obsolete("Prefer OrangeSpriteAnimator and OrangeSpriteManager")]
 public class OrangeAnimation : MonoBehaviour {
     public string animationName;
     public List<Sprite> frames = new List<Sprite>();
