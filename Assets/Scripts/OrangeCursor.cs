@@ -6,6 +6,9 @@ using UnityEngine.UI;
 public class OrangeCursor : MonoBehaviour {
     private RectTransform rectTransform;
     private Vector2 scaleCoeff;
+
+    public Vector2 padding;
+
     // Start is called before the first frame update
     void Start() {
         rectTransform = gameObject.GetOrCreateComponent<RectTransform>();
@@ -19,6 +22,6 @@ public class OrangeCursor : MonoBehaviour {
             return;
         }
         rectTransform.position = currentSelection.transform.position;
-        rectTransform.sizeDelta = currentSelection.GetComponent<RectTransform>().sizeDelta * scaleCoeff;
+        rectTransform.sizeDelta = padding + currentSelection.GetComponent<RectTransform>().sizeDelta * scaleCoeff ;
     }
 }
