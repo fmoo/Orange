@@ -33,6 +33,20 @@ public static class DirectionsUtils {
         return Vector2.zero;
     }
 
+    public static Vector2 ToVector2Int(Directions4 d) {
+        switch (d) {
+            case Directions4.UP:
+                return Vector2Int.up;
+            case Directions4.LEFT:
+                return Vector2Int.left;
+            case Directions4.RIGHT:
+                return Vector2Int.right;
+            case Directions4.DOWN:
+                return Vector2Int.right;
+        }
+        return Vector2Int.zero;
+    }
+
     // TODO: Should we normalize up + left to have a magnitude of 1?
     public static Vector2 ToVector2(Directions8 d) {
         switch (d) {
@@ -64,9 +78,13 @@ public static class DirectionsUtils {
             return Directions4.LEFT;
         } else if (angle > 45f) {
             return Directions4.RIGHT;
-        }  else {
+        } else {
             return Directions4.UP;
         }
+    }
+
+    public static Directions4 NearestDirection4(this Vector2Int v) {
+        return NearestDirection4(new Vector2(v.x, v.y));
     }
 
     public static Directions8 NearestDirection8(this Vector2 v) {
