@@ -111,6 +111,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
 
     void Update() {
         DoUpdateSize();
+        DoFocusIfNone();
     }
 
     void DoUpdateSize() {
@@ -123,5 +124,15 @@ public class OrangeCanvasHelper : MonoBehaviour {
         canvasScaler.scaleFactor = Screen.height / referenceHeight;
         lastHeight = Screen.height;
         lastReferenceHeight = referenceHeight;
+    }
+
+    void DoFocusIfNone() {
+        if (uiCursor == null) return;
+        if (!uiCursor.gameObject.activeSelf) return;
+        if (EventSystem.current.currentSelectedGameObject != null) return;
+        var selectables = GetUISelectables();
+        if (selectables.Count > 0) {
+            selectables[0].Select();
+        }
     }
 }

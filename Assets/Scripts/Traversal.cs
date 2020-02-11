@@ -84,6 +84,14 @@ namespace Orange {
         }
 
         public static HashSet<Vector2Int> TraverseAction(
+            Vector2Int position,
+            int minDistance,
+            int maxDistance
+        ) {
+            return TraverseAction(new Vector2Int[] { position }, minDistance, maxDistance);
+        }
+
+        public static HashSet<Vector2Int> TraverseAction(
             IEnumerable<Vector2Int> startPoints,
             int minDistance,
             int maxDistance
