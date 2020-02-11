@@ -15,43 +15,68 @@ public class OrangeCanvasHelper : MonoBehaviour {
     // TODO: maybe this should be event driven?
     public List<GameObject> disableObjectsForUI = new List<GameObject>();
 
-    private Selectable[] GetUISelectables() {
-        return gameObject.GetComponentsInChildren<Selectable>(false);
+    private IList<Selectable> GetUISelectables() {
+        var result = new List<Selectable>();
+        foreach (var selectable in gameObject.GetComponentsInChildren<Selectable>(false)) {
+            if (selectable.interactable) {
+                result.Add(selectable);
+            }
+        }
+        return result;
     }
     private bool GetUIHasSelectables() {
         var buttons = GetUISelectables();
-        return buttons.Length > 0;
+        return buttons.Count > 0;
     }
     private bool GetAnyUIVisible() {
         var elements = gameObject.GetComponentsInChildren<RectTransform>(false);
         return elements.Length > 1;
     }
 
+    public void SetSelectable(Selectable selectable, bool isSelectable) {
+        if (isSelectable) {
+            EnableSelectable(selectable);
+        } else {
+            DisableSelectable(selectable);
+        }
+    }
+
     public void DisableSelectable(Selectable selectable) {
         selectable.interactable = false;
         if (selectable == EventSystem.current.currentSelectedGameObject) {
             var selectables = GetUISelectables();
-            if (selectables.Length > 0) {
+            if (selectables.Count > 0) {
                 EventSystem.current.SetSelectedGameObject(selectables[0].gameObject);
             } else {
-                EventSystem.current.SetSelectedGameObject(null);
-                uiCursor.gameObject.SetActive(false);
+                HideCursor();
             }
         }
     }
     public void EnableSelectable(Selectable selectable) {
         selectable.interactable = true;
+        ShowCursor();
+    }
+
+    public void ShowCursor() {
         uiCursor.gameObject.SetActive(true);
+        if (EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>()?.interactable != true) {
+            var selectables = GetUISelectables();
+            if (selectables.Count > 0) {
+                selectables[0].Select();
+            }
+        }
+    }
+    public void HideCursor() {
+        uiCursor.gameObject.SetActive(false);
+        EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void ShowUIPanel(RectTransform uiPanel) {
         uiPanel.gameObject.SetActive(true);
         if (GetUIHasSelectables()) {
-            var wasActive = uiCursor.gameObject.activeSelf;
-            uiCursor.gameObject.SetActive(true);
-            if (!wasActive) {
-                GetUISelectables()[0].Select();
-            }
+            ShowCursor();
+        } else {
+            Debug.Log("UI Panel shown without any interactable selectables??");
         }
         if (GetAnyUIVisible()) {
             // TODO: Hide all of disableObjectsForUI ?
@@ -60,8 +85,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
     public void HideUIPanel(RectTransform uiPanel) {
         uiPanel.gameObject.SetActive(false);
         if (!GetUIHasSelectables()) {
-            uiCursor.gameObject.SetActive(false);
-            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+            HideCursor();
         }
         if (GetAnyUIVisible()) {
             // TODO: Show all of disableObjectsForUI ?
