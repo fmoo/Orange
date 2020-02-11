@@ -54,17 +54,26 @@ public class OrangeCanvasHelper : MonoBehaviour {
     }
     public void EnableSelectable(Selectable selectable) {
         selectable.interactable = true;
-        ShowCursor();
+        if (selectable.gameObject.activeInHierarchy) {
+            ShowCursor();
+        }
     }
 
     public void ShowCursor() {
-        if (EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>()?.interactable != true) {
+        var currentSelectable = EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>();
+        if (currentSelectable?.interactable != true) {
             var selectables = GetUISelectables();
             if (selectables.Count > 0) {
-                selectables[0].Select();
+                currentSelectable = selectables[0];
+                currentSelectable.Select();
             }
         }
+        // TODO: if the cursor was *not* visible, jump the cursor *immediately* to the currentSelectedGameObject
+        var wasActive = uiCursor.gameObject.activeSelf;
         uiCursor.gameObject.SetActive(true);
+        if (!wasActive) {
+            uiCursor.SnapToTarget(currentSelectable);
+        }
     }
     public void HideCursor() {
         uiCursor.gameObject.SetActive(false);

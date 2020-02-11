@@ -26,4 +26,14 @@ public class OrangeCursor : MonoBehaviour {
         rectTransform.position = currentSelection.transform.position;
         rectTransform.sizeDelta = padding + currentSelection.GetComponent<RectTransform>().sizeDelta * scaleCoeff ;
     }
+
+    public void SnapToTarget(Selectable target) {
+        if (target == null) return;
+        if (rectTransform == null)
+            rectTransform = GetComponent<RectTransform>();
+
+        var targetTransform = target.GetComponent<RectTransform>();
+        rectTransform.position = targetTransform.position;
+        rectTransform.sizeDelta = padding + targetTransform.sizeDelta * scaleCoeff ;
+    }
 }
