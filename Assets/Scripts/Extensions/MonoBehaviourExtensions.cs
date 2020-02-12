@@ -2,17 +2,46 @@
 using System.Collections;
 
 public static class MonoBehaviourExtensions {
-    public static Coroutine StartLater(this MonoBehaviour c, float inSeconds, System.Action action) {
-        return c.StartCoroutine(LaterCoroutine(inSeconds, action));
+    public static Coroutine StartCoroutine(this MonoBehaviour b, IEnumerator coroutine, System.Action onDone) {
+        return b.StartCoroutine(CoroutineWithFinishAction(coroutine, onDone));
     }
 
-    public static Coroutine StartLater(this MonoBehaviour c, float inSeconds, System.Func<IEnumerator> action) {
-        return c.StartCoroutine(LaterCoroutine(inSeconds, action));
+    public static Coroutine StartCoroutinesSerial(this MonoBehaviour b, IEnumerator[] coroutines, System.Action onDone = null) {
+        return b.StartCoroutine(CoroutinesSerial(coroutines, onDone));
     }
 
-    private static IEnumerator LaterCoroutine(float inSeconds, System.Action action) {
+    public static Coroutine StartLater(this MonoBehaviour b, float inSeconds, System.Action onDone) {
+        return b.StartCoroutine(LaterCoroutine(inSeconds, onDone));
+    }
+
+    public static Coroutine StartLater(this MonoBehaviour b, float inSeconds, IEnumerator coroutine) {
+        return b.StartCoroutine(LaterCoroutine(inSeconds, coroutine));
+    }
+
+    public static Coroutine StartLater(this MonoBehaviour b, float inSeconds, System.Func<IEnumerator> action) {
+        return b.StartCoroutine(LaterCoroutine(inSeconds, action));
+    }
+
+    private static IEnumerator CoroutinesSerial(IEnumerator[] coroutines, System.Action onDone) {
+        foreach (var coroutine in coroutines) {
+            yield return coroutine;
+        }
+        onDone();
+    }
+
+    private static IEnumerator CoroutineWithFinishAction(IEnumerator coroutine, System.Action onDone) {
+        yield return coroutine;
+        onDone();
+    }
+
+    private static IEnumerator LaterCoroutine(float inSeconds, System.Action onDone) {
         yield return new WaitForSeconds(inSeconds);
-        action();
+        onDone();
+    }
+
+    private static IEnumerator LaterCoroutine(float inSeconds, IEnumerator coroutine) {
+        yield return new WaitForSeconds(inSeconds);
+        yield return coroutine;
     }
 
     private static IEnumerator LaterCoroutine(float inSeconds, System.Func<IEnumerator> action) {
