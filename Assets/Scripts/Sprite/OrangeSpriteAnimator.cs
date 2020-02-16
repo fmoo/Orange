@@ -3,39 +3,41 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class OrangeSpriteAnimator : MonoBehaviour {
-    public new string name;
+    public string animationName;
     public bool active = true;
     public OrangeSpriteManager sprites;
-    public new SpriteRenderer renderer;
+    public SpriteRenderer spriteRenderer;
     public UnityEngine.UI.Image image;
 
-    private new OrangeSpriteManagerAnimation animation;
+    private OrangeSpriteManagerAnimation animator;
     private float timeElapsed = 0f;
 
-    public void SetAnimation(string name) {
-        this.name = name;
-        animation = sprites.GetAnimation(name);
+    public void SetAnimation(string animationName) {
+        this.animationName = animationName;
+        animator = sprites.GetAnimation(animationName);
     }
 
-    // Start is called before the first frame update
     void Start() {
-        if (!active) {
-            return;
-        }
-        SetAnimation(name);
+        SetAnimation(animationName);
     }
 
     void OnValidate() {
         if (!active) return;
         if (sprites == null) return;
 
-        var anim = sprites.GetAnimation(name);
+        var anim = sprites.GetAnimation(animationName);
         if (anim == null) return;
 
-        if (renderer != null)
-            anim.GetSpriteForIndex(0).SetRendererSprite(renderer);
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+            anim.GetSpriteForIndex(0).SetRendererSprite(spriteRenderer);
+
+        if (image == null)
+            image = GetComponent<UnityEngine.UI.Image>();
         if (image != null)
             anim.GetSpriteForIndex(0).SetUIImageSprite(image);
+        SetAnimation(animationName);
     }
 
     // Update is called once per frame
@@ -43,10 +45,16 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         if (!active) {
             return;
         }
+        if (animator is null) {
+            SetAnimation(animationName);
+            if (animator is null) {
+                Debug.LogWarning($"Animator is not set for {animationName} on {name}");
+            }
+        }
         timeElapsed += Time.deltaTime;
-        if (renderer != null)
-            animation.GetSpriteForTime(timeElapsed).SetRendererSprite(renderer);
+        if (spriteRenderer != null)
+            animator.GetSpriteForTime(timeElapsed).SetRendererSprite(spriteRenderer);
         if (image != null)
-            animation.GetSpriteForTime(timeElapsed).SetUIImageSprite(image);
+            animator.GetSpriteForTime(timeElapsed).SetUIImageSprite(image);
     }
 }
