@@ -6,11 +6,9 @@ using UnityEngine.EventSystems;
 
 [ExecuteInEditMode]
 public class OrangeCanvasHelper : MonoBehaviour {
-    new public UnityEngine.U2D.PixelPerfectCamera camera;
+    public OrangeDisplay display;
+    public UnityEngine.U2D.PixelPerfectCamera ppCamera;
     private CanvasScaler canvasScaler;
-    private int lastHeight;
-    private int lastReferenceHeight;
-
     public OrangeCursor uiCursor;
     // TODO: maybe this should be event driven?
     public List<GameObject> disableObjectsForUI = new List<GameObject>();
@@ -89,6 +87,13 @@ public class OrangeCanvasHelper : MonoBehaviour {
             // TODO: Hide all of disableObjectsForUI ?
         }
     }
+    public void ShowUIPanel(Component component) {
+        // TODO: Instead of Component, should this be an intermediate class that provides
+        // an API to get the RectTransform?
+        var rt = component.GetComponent<RectTransform>();
+        if (rt == null) return;
+        ShowUIPanel(rt);
+    }
     public void HideUIPanel(RectTransform uiPanel) {
         uiPanel.gameObject.SetActive(false);
         if (!GetUIHasSelectables()) {
@@ -98,31 +103,31 @@ public class OrangeCanvasHelper : MonoBehaviour {
             // TODO: Show all of disableObjectsForUI ?
         }
     }
-
-    void Start() {
-        DoUpdateSize();
-    }
-
-    void Awake() {
-        DoUpdateSize();
+    public void HideUIPanel(Component component) {
+        var rt = component.GetComponent<RectTransform>();
+        if (rt == null) return;
+        HideUIPanel(rt);
     }
 
     void Update() {
-        DoUpdateSize();
         DoFocusIfNone();
     }
 
+    void Start() {
+        // uiCursor must render on top of menus.  Put it last.
+        if (uiCursor != null)
+            uiCursor.transform.SetAsLastSibling();
+        DoUpdateSize();
+        display.OnResolutionChanged += DoUpdateSize;
+    }
+
     void DoUpdateSize() {
-        if (camera == null) return;
-        var referenceHeight = camera.refResolutionY;
-        if (Screen.height == lastHeight && referenceHeight == lastReferenceHeight) return;
-        if (referenceHeight <= 0) return;
+        var referenceHeight = ppCamera.refResolutionY;
+        var referenceWidth = ppCamera.refResolutionX;
         canvasScaler = gameObject.GetOrCreateComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-        canvasScaler.scaleFactor = Screen.height / referenceHeight;
-        lastHeight = Screen.height;
-        lastReferenceHeight = referenceHeight;
-    }
+        canvasScaler.scaleFactor = Mathf.Min(Screen.height / referenceHeight, Screen.width / referenceWidth);
+   }
 
     void DoFocusIfNone() {
         if (uiCursor == null) return;
