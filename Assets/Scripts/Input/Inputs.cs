@@ -44,7 +44,7 @@ public sealed class InputButton : InputBase {
     public bool Pressed {
         get { return Input.GetButton(Name); }
     }
-    public IEnumerable GenPressed() {
+    public IEnumerator GenPressed() {
         while (true) {
             if (Pressed) {
                 yield return null;
@@ -86,7 +86,7 @@ public sealed class InputButton : InputBase {
     public bool Up {
         get { return Input.GetButtonUp(Name); }
     }
-    public IEnumerable GenUp() {
+    public IEnumerator GenUp() {
         while (true) {
             if (Up || !Pressed) {
                 yield return null;
