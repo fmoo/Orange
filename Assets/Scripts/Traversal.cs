@@ -97,15 +97,27 @@ namespace Orange {
             int minDistance,
             int maxDistance
         ) {
-            var result = new HashSet<Vector2Int>();
-            var work = new Queue<(Vector2Int, int, DirFlags)>();
+            return new HashSet<Vector2Int>(
+                TraverseActionWithSourceList(startPoints, minDistance, maxDistance).Keys);
+        }
+
+        public static Dictionary<Vector2Int, HashSet<Vector2Int>> TraverseActionWithSourceList(
+          IEnumerable<Vector2Int> startPoints,
+          int minDistance,
+          int maxDistance
+      ) {
+            var result = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
+            var work = new Queue<(Vector2Int, int, DirFlags, Vector2Int)>();
             foreach (var startPoint in startPoints) {
-                work.Enqueue((startPoint, 0, DirFlags.ALL));
+                work.Enqueue((startPoint, 0, DirFlags.ALL, startPoint));
             }
             while (work.Count > 0) {
-                var (position, distance, availDirs) = work.Dequeue();
+                var (position, distance, availDirs, startPoint) = work.Dequeue();
                 if (distance >= minDistance && distance <= maxDistance) {
-                    result.Add(position);
+                    if (!result.ContainsKey(position)) {
+                        result[position] = new HashSet<Vector2Int>();
+                    }
+                    result[position].Add(startPoint);
                 }
                 var nextDistance = distance + 1;
                 if (nextDistance > maxDistance) continue;
@@ -114,11 +126,12 @@ namespace Orange {
                     var d = GetDirectionForFlag(df);
                     var nextPos = position + d;
                     var nextAvail = availDirs & ~GetFlagInverse(df);
-                    work.Enqueue((nextPos, nextDistance, nextAvail));
+                    work.Enqueue((nextPos, nextDistance, nextAvail, startPoint));
                 }
             }
             return result;
         }
+
     }
 
     public class RestrictedTraversal {
