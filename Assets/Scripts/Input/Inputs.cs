@@ -104,6 +104,32 @@ public sealed class InputButton : InputBase {
     }
 }
 
+public sealed class MouseButton : InputBase {
+    public static MouseButton LEFT = new MouseButton(0, "LeftMouse");
+    public static MouseButton RIGHT = new MouseButton(1, "RightMouse");
+    public static MouseButton MIDDLE = new MouseButton(2, "MiddleMouse");
+
+    private int mouseButton;
+    private MouseButton(int mouseButton, string name) : base(name) {
+        this.mouseButton = mouseButton;
+    }
+
+    public bool Down {
+        get {
+            return Input.GetMouseButtonDown(mouseButton);
+        }
+    }
+    public bool Up {
+        get {
+            return Input.GetMouseButtonUp(mouseButton);
+        }
+    }
+    public bool Pressed {
+        get {
+            return Input.GetMouseButton(mouseButton);
+        }
+    }
+}
 
 public sealed class InputKey : InputBase {
     public static Dictionary<KeyCode, InputKey> KEYS = new Dictionary<KeyCode, InputKey>();
