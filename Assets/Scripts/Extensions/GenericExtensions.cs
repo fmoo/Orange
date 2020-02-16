@@ -4,6 +4,10 @@ using UnityEngine;
 
 
 public static class GenericExtensions {
+    public static T PickRandomOne<T>(this IEnumerable<T> a) {
+        return (new List<T>(a)).PickRandomOne();
+    }
+
     public static T PickRandomOne<T>(this List<T> a) {
         if (a.Count == 0) return default;
         else if (a.Count == 1) return a[0];
