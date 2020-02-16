@@ -48,10 +48,6 @@ public class OrangeSpriteManager : MonoBehaviour {
             namedAnimations[a.name] = a;
         }
     }
-
-    void Update() {
-
-    }
 }
 
 
