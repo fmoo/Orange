@@ -1,0 +1,6 @@
+SuperTiled2Unity is an AMAZING software package from Seanba, that natively
+integrates tiled into Unity.  It's fantastic.
+
+You should sponsor their work on itch.io:
+
+https://seanba.itch.io/supertiled2unity
