@@ -10,8 +10,6 @@ public class OrangeCanvasHelper : MonoBehaviour {
     public UnityEngine.U2D.PixelPerfectCamera ppCamera;
     private CanvasScaler canvasScaler;
     public OrangeCursor uiCursor;
-    // TODO: maybe this should be event driven?
-    public List<GameObject> disableObjectsForUI = new List<GameObject>();
 
     private IList<Selectable> GetUISelectables() {
         var result = new List<Selectable>();
@@ -69,6 +67,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
         // TODO: if the cursor was *not* visible, jump the cursor *immediately* to the currentSelectedGameObject
         var wasActive = uiCursor.gameObject.activeSelf;
         uiCursor.gameObject.SetActive(true);
+        DoFocusIfNone();
         if (!wasActive) {
             uiCursor.SnapToTarget(currentSelectable);
         }
@@ -83,9 +82,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
         if (GetUIHasSelectables()) {
             ShowCursor();
         }
-        if (GetAnyUIVisible()) {
-            // TODO: Hide all of disableObjectsForUI ?
-        }
+        DoFocusIfNone();
     }
     public void ShowUIPanel(Component component) {
         // TODO: Instead of Component, should this be an intermediate class that provides
@@ -99,9 +96,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
         if (!GetUIHasSelectables()) {
             HideCursor();
         }
-        if (GetAnyUIVisible()) {
-            // TODO: Show all of disableObjectsForUI ?
-        }
+        DoFocusIfNone();
     }
     public void HideUIPanel(Component component) {
         var rt = component.GetComponent<RectTransform>();
@@ -110,7 +105,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
     }
 
     void Update() {
-        DoFocusIfNone();
+        DoFocusIfNone(true);
     }
 
     void Start() {
@@ -127,15 +122,26 @@ public class OrangeCanvasHelper : MonoBehaviour {
         canvasScaler = gameObject.GetOrCreateComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
         canvasScaler.scaleFactor = Mathf.Min(Screen.height / referenceHeight, Screen.width / referenceWidth);
-   }
+    }
 
-    void DoFocusIfNone() {
+    void DoFocusIfNone(bool onlyIfNull = false) {
         if (uiCursor == null) return;
-        if (!uiCursor.gameObject.activeSelf) return;
-        if (EventSystem.current.currentSelectedGameObject != null) return;
-        var selectables = GetUISelectables();
-        if (selectables.Count > 0) {
-            selectables[0].Select();
+        if (!uiCursor.gameObject.activeInHierarchy) return;
+        var selection = EventSystem.current.currentSelectedGameObject;
+        if (selection == null) {
+            var selectables = GetUISelectables();
+            if (selectables.Count > 0) {
+                selectables[0].Select();
+            }
+        } else if (!onlyIfNull) {
+            var selectable = selection.GetComponent<Selectable>();
+            // Debug.Log($"A:{selectable.gameObject.activeInHierarchy}  B:{selectable.gameObject.activeSelf}  C:{selectable.interactable}");
+            if (!selectable.gameObject.activeInHierarchy || !selectable.interactable) {
+                var selectables = GetUISelectables();
+                if (selectables.Count > 0) {
+                    selectables[0].Select();
+                }
+            }
         }
     }
 }
