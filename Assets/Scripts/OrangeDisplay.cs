@@ -3,28 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class OrangeDisplay : MonoBehaviour {
-    public int Width;
-    public int Height;
+    public Camera orthographicCamera;
+
     public bool IsValid = false;
     private int LastWidth;
     private int LastHeight;
+    private float? LastOrthographicSize = null;
 
     public System.Action OnResolutionChanged = null;
 
     void Start() {
-        Width = Screen.width;
-        Height = Screen.height;
         IsValid = true;
     }
 
     // Update is called once per frame
     void Update() {
-        Width = Screen.width;
-        Height = Screen.height;
-        if (LastWidth != Width || LastHeight != Height) {
+        var width = Screen.width;
+        var height = Screen.height;
+        var orthographicSize = orthographicCamera?.orthographicSize;
+        if (LastWidth != width || LastHeight != height || LastOrthographicSize != orthographicSize) {
             OnResolutionChanged?.Invoke();
-            LastWidth = Width;
-            LastHeight = Height;
+            LastWidth = width;
+            LastHeight = height;
+            LastOrthographicSize = orthographicSize;
         }
     }
 }

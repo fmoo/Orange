@@ -61,7 +61,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
             var selectables = GetUISelectables();
             if (selectables.Count > 0) {
                 currentSelectable = selectables[0];
-                currentSelectable.Select();
+                SelectImmediately(currentSelectable);
             }
         }
         // TODO: if the cursor was *not* visible, jump the cursor *immediately* to the currentSelectedGameObject
@@ -131,7 +131,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
         if (selection == null) {
             var selectables = GetUISelectables();
             if (selectables.Count > 0) {
-                selectables[0].Select();
+                SelectImmediately(selectables[0]);
             }
         } else if (!onlyIfNull) {
             var selectable = selection.GetComponent<Selectable>();
@@ -139,9 +139,14 @@ public class OrangeCanvasHelper : MonoBehaviour {
             if (!selectable.gameObject.activeInHierarchy || !selectable.interactable) {
                 var selectables = GetUISelectables();
                 if (selectables.Count > 0) {
-                    selectables[0].Select();
+                    SelectImmediately(selectables[0]);
                 }
             }
         }
+    }
+
+    public void SelectImmediately(Selectable selectable) {
+        selectable.Select();
+        uiCursor.SnapToTarget(selectable);
     }
 }

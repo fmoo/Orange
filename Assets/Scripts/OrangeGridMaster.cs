@@ -12,6 +12,8 @@ public class OrangeGridMaster : MonoBehaviour {
             return _bounds;
         }
     }
+
+    public Tilemap metaTilemap;
     IEnumerable<Tilemap> tilemaps;
 
     private Vector3Int v3i = new Vector3Int();
@@ -24,13 +26,26 @@ public class OrangeGridMaster : MonoBehaviour {
         return grid.GetCellCenterWorld(v3i);
     }
 
+    public IEnumerable<(Vector2Int, T)> GetAllMetaTiles<T>() where T : TileBase {
+        foreach (var p in bounds.allPositionsWithin) {
+            var t = GetMetaTile<T>(p);
+            if (t != null) {
+                yield return (p, t);
+            }
+        }
+    }
 
-    public IEnumerable<TileBase> GetTiles(Vector2Int position) {
-        DoInitialize();
-        var l = new List<Tile>();
+    public T GetMetaTile<T>(Vector2Int position) where T : TileBase {
         v3i.x = position.x;
         v3i.y = position.y;
-        return tilemaps.Select(s => s.GetTile(v3i)).Where(s => s != null);
+        return metaTilemap.GetTile<T>(v3i);
+    }
+
+    public IEnumerable<T> GetTiles<T>(Vector2Int position) where T : TileBase {
+        DoInitialize();
+        v3i.x = position.x;
+        v3i.y = position.y;
+        return tilemaps.Select(s => s.GetTile<T>(v3i)).Where(s => s != null);
     }
 
     public Bounds CalculateCameraBounds(Camera c) {
