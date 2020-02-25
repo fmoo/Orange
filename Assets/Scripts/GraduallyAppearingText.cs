@@ -12,62 +12,60 @@ public class GraduallyAppearingText : MonoBehaviour {
     private float timeElapsed = 0.0f;
     private bool done = false;
 
-    /**
-	 * Override the text to render.  
-	 */
+    /// <summary>Current text to render. DO NOT USE this directly.  Call SetRenderText() instead.</summary>
     public string renderText = "";
 
-    /**
-	 * The number of seconds per character displayed.
-	 */
+    /// <sumamry>The number of seconds per character displayed.</summary>
     public float charDisplaySpeed = 0.01f;
 
+    /// <sumamry>Current reference to a uiTextComponent.  If not set, one will be checked on this component's gameObject.</summary>
     public Text uiText;
+    /// <sumamry>Current reference to a TMP Text component.  If not set, one will be checked on this component's gameObject.</summary>
     public TMP_Text tmpText;
 
-    /**
-	 * Helper to set new text for rendering.  Resets the internal state.
-	 */
+    /// <summary>Set new text for rendering, restarting any in-progress progressive rendering.</summary>
     public void SetRenderText(string text) {
         renderText = text;
         Reset();
-		SetUITextContents("");
+        SetUITextContents("");
     }
 
-    /**
-	 * Reset the current state
-	 */
-    public void Reset() {
-        done = false;
-        timeElapsed = 0.0f;
-    }
-
+    /// <summary>Returns true if the current message has been fully displayed</summary>
     public bool IsFinished() {
         return done;
     }
 
-    /**
-	 * Helper function for handling button presses from external sources
-	 */
+    /// <summary>Complete gradual rendering instantly.</summary>
     public void SkipToEnd() {
         done = true;
         UpdateText();
     }
 
+    /// <summary>For use in Coroutines.  Returns once all text has appeared</summary>
+    public IEnumerator WaitForTextAppear() {
+        while (!IsFinished()) {
+            yield return new WaitForSeconds(charDisplaySpeed);
+        }
+    }
+
+    /// <summary>Reset the current displaying text back to the beginning</summary>
+    public void Reset() {
+        done = false;
+        timeElapsed = 0.0f;
+    }
+
     void OnValidate() {
         if (uiText == null)
             uiText = GetComponent<Text>();
+        if (uiText != null)
+            uiText.supportRichText = true;
         if (tmpText == null)
             tmpText = GetComponent<TMP_Text>();
     }
 
-    /**
-	 * Initialize the UIText settings (enable rich-text) and local render text.
-	 */
     void Start() {
-		OnValidate();
+        OnValidate();
         if (uiText != null) {
-            uiText.supportRichText = true;
             if (renderText == "") {
                 renderText = uiText.text;
             }
@@ -78,12 +76,8 @@ public class GraduallyAppearingText : MonoBehaviour {
         }
     }
 
-    // Update is called once per frame
     void Update() {
-        // If we finished rendering, clear the finish flag.
-        if (done) {
-            return;
-        }
+        if (done) return;
 
         // Update internal timer, recalculate visible chars, and update UI.Text with partially
         // transparent rich-text as appropriate.
@@ -105,12 +99,6 @@ public class GraduallyAppearingText : MonoBehaviour {
             );
         }
     }
-
-	public IEnumerator WaitForTextAppear() {
-		while (!IsFinished()) {
-			yield return new WaitForSeconds(charDisplaySpeed);
-		}
-	}
 
     void SetUITextContents(string contents) {
         if (uiText != null) {
