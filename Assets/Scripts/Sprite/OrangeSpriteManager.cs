@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class OrangeSpriteManager : MonoBehaviour {
@@ -73,6 +74,7 @@ public class OrangeSpriteManagerAnimation {
     public string name;
     public string config;
     public float duration = 0.5f;
+    public bool reverse = false;
 
     public OrangeSpriteManagerSprite GetSpriteForTime(float timeElapsed) {
         if (frames.Count < 1) {
@@ -88,7 +90,9 @@ public class OrangeSpriteManagerAnimation {
 
     public void initFrames(OrangeSpriteManager m) {
         frames.Clear();
-        foreach (var p in config.Split(',')) {
+        IEnumerable<string> split = config.Split(',');
+        if (reverse) split = split.Reverse();
+        foreach (var p in split) {
             frames.Add(m.GetSprite(p));
         }
     }
