@@ -135,7 +135,6 @@ public class OrangeCanvasHelper : MonoBehaviour {
             }
         } else if (!onlyIfNull) {
             var selectable = selection.GetComponent<Selectable>();
-            // Debug.Log($"A:{selectable.gameObject.activeInHierarchy}  B:{selectable.gameObject.activeSelf}  C:{selectable.interactable}");
             if (!selectable.gameObject.activeInHierarchy || !selectable.interactable) {
                 var selectables = GetUISelectables();
                 if (selectables.Count > 0) {

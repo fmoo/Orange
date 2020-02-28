@@ -13,16 +13,15 @@ public class OrangeCameraFollow : MonoBehaviour {
         if (targetSprite != null) {
             return targetSprite.bounds;
         } else if (targetCollider != null) {
-            return targetSprite.bounds;
+            return targetCollider.bounds;
         } else {
-            return Camera.current.OrthographicBounds();
+            return affectCamera.OrthographicBounds();
         }
     }
 
     void LateUpdate() {
         DoUpdateNaive();
     }
-
 
     public float noScrollRatio = 0.7f;
     public float cameraSpeed = 2f;
