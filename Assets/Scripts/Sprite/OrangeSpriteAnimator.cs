@@ -8,13 +8,17 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     public OrangeSpriteManager sprites;
     public SpriteRenderer spriteRenderer;
     public UnityEngine.UI.Image image;
+    public bool destroyOnDone = true;
 
     private OrangeSpriteManagerAnimation animator;
     private float timeElapsed = 0f;
 
     public void SetAnimation(string animationName) {
+        timeElapsed = 0f;
         this.animationName = animationName;
         animator = sprites.GetAnimation(animationName);
+        if (animator == null)
+            Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}");
     }
 
     void Start() {
@@ -48,13 +52,37 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         if (animator is null) {
             SetAnimation(animationName);
             if (animator is null) {
-                Debug.LogWarning($"Animator is not set for {animationName} on {name}");
+                Debug.LogError($"Animator is not set for {animationName} on {name}");
             }
         }
         timeElapsed += Time.deltaTime;
-        if (spriteRenderer != null)
-            animator.GetSpriteForTime(timeElapsed).SetRendererSprite(spriteRenderer);
-        if (image != null)
-            animator.GetSpriteForTime(timeElapsed).SetUIImageSprite(image);
+        var sprite = animator.GetSpriteForTime(timeElapsed);
+
+        if (sprite != null) {
+            if (spriteRenderer != null) {
+                sprite.SetRendererSprite(spriteRenderer);
+            }
+            if (image != null)
+                sprite.SetUIImageSprite(image);
+        }
+
+        if (sprite == null && destroyOnDone) {
+            if (animator.loop == true) {
+                Debug.LogError("Null sprite returned for looping animation!");
+                return;
+            }
+            Destroy(gameObject);
+        }
+    }
+
+    public IEnumerator WaitForDone() {
+        if (animator == null) Start();
+        if (animator.loop) {
+            Debug.LogError($"{name}'s .WaitForDone() called for looping animation '{animator.name}'!");
+            yield break;
+        }
+        var timeToSleep = animator.duration - timeElapsed;
+        if (timeToSleep <= 0f) yield break;
+        yield return new WaitForSeconds(timeToSleep);
     }
 }

@@ -12,25 +12,18 @@ public class OrangeSpriteManager : MonoBehaviour {
         new Dictionary<string, OrangeSpriteManagerAnimation>();
 
     public OrangeSpriteManagerSprite GetSprite(string name) {
+        if (namedSprites.Count == 0) BuildIndex();
         if (namedSprites.TryGetValue(name, out OrangeSpriteManagerSprite result)) {
             return result;
         }
         return null;
     }
     public OrangeSpriteManagerAnimation GetAnimation(string name) {
+        if (namedAnimations.Count == 0) BuildIndex();
         if (namedAnimations.TryGetValue(name, out OrangeSpriteManagerAnimation result)) {
             return result;
         }
         return null;
-    }
-
-    public void SetRendererSprite(SpriteRenderer renderer, string name) {
-        var ns = GetSprite(name);
-        if (ns == null) {
-            return;
-        }
-        renderer.flipX = ns.flip;
-        renderer.sprite = ns.sprite;
     }
 
     private void OnValidate() {
@@ -49,52 +42,36 @@ public class OrangeSpriteManager : MonoBehaviour {
             namedAnimations[a.name] = a;
         }
     }
-}
 
 
-[System.Serializable]
-public class OrangeSpriteManagerSprite {
-    public string name;
-    public Sprite sprite;
-    public bool flip = false;
-
-    public void SetRendererSprite(SpriteRenderer renderer) {
-        renderer.flipX = flip;
-        renderer.sprite = sprite;
-    }
-    public void SetUIImageSprite(UnityEngine.UI.Image uiImage) {
-        // TODO: How to flip UI Image?
-        // uiImage.flipX = flip;
-        uiImage.sprite = sprite;
-    }
-}
-
-[System.Serializable]
-public class OrangeSpriteManagerAnimation {
-    public string name;
-    public string config;
-    public float duration = 0.5f;
-    public bool reverse = false;
-
-    public OrangeSpriteManagerSprite GetSpriteForTime(float timeElapsed) {
-        if (frames.Count < 1) {
-            return null;
+    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    public Sprite[] importSprites;
+    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    public string importAnimName;
+    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    public bool renameImportedSprites = true;
+    [NaughtyAttributes.Button("Import Sprites")]
+    public void DoImportSprites() {
+        int ii = 0;
+        var addedList = new List<string>();
+        foreach (var sprite in importSprites) {
+            var name = !renameImportedSprites ? sprite.name : $"{importAnimName}{ii}";
+            addedList.Add(name);
+            sprites.Add(new OrangeSpriteManagerSprite() {
+                sprite = sprite,
+                name = name,
+            });
+            ii += 1;
         }
-        float f = (timeElapsed % duration) / duration;
-        return GetSpriteForIndex((int)(frames.Count * f));
-    }
-
-    public OrangeSpriteManagerSprite GetSpriteForIndex(int frameIndex) {
-        return frames[frameIndex];
-    }
-
-    public void initFrames(OrangeSpriteManager m) {
-        frames.Clear();
-        IEnumerable<string> split = config.Split(',');
-        if (reverse) split = split.Reverse();
-        foreach (var p in split) {
-            frames.Add(m.GetSprite(p));
+        if (importAnimName != "") {
+            string config = string.Join(",", addedList);
+            animations.Add(new OrangeSpriteManagerAnimation() {
+                name = importAnimName,
+                config = config,
+            });
         }
+        importSprites = new Sprite[0];
+        importAnimName = "";
+        renameImportedSprites = true;
     }
-    List<OrangeSpriteManagerSprite> frames = new List<OrangeSpriteManagerSprite>();
 }
