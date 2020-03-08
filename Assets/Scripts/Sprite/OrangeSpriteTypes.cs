@@ -43,7 +43,7 @@ public class OrangeSpriteManagerAnimation {
         return frames[frameIndex];
     }
 
-    public void initFrames(OrangeSpriteManager m) {
+    public void initFrames(OrangeSpriteDB m) {
         frames.Clear();
         IEnumerable<string> split = config.Split(',');
         if (reverse) split = split.Reverse();

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class OrangeSpriteManager : MonoBehaviour {
+[CreateAssetMenu(fileName = "SpritesDB", menuName = "Data/Sprite DB", order = 3)]
+public class OrangeSpriteDB : ScriptableObject {
     public List<OrangeSpriteManagerSprite> sprites = new List<OrangeSpriteManagerSprite>();
     public List<OrangeSpriteManagerAnimation> animations = new List<OrangeSpriteManagerAnimation>();
     private Dictionary<string, OrangeSpriteManagerSprite> namedSprites =

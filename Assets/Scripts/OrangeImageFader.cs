@@ -19,6 +19,10 @@ public class OrangeImageFader : MonoBehaviour {
 
     private int fadeID = 0;
 
+    void OnValidate() {
+        image.raycastTarget = image.color.a > 0f;
+    }
+
     public void SetColor(Color color) {
         image.color = color;
         // Block clicks if there is alpha

@@ -4,16 +4,20 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class OrangePanel : MonoBehaviour {
-    public RectTransform rectTransform;
-    public Image backgroundImage;
+    [SerializeField] RectTransform rectTransform;
+    [SerializeField] Image backgroundImage;
+    [SerializeField] Color defaultColor = new Color(Color.blue.r, Color.blue.g, Color.blue.b, 0.5f);
+    [SerializeField] CanvasGroup canvasGroup;
 
     public void Show() {
         rectTransform.gameObject.SetActive(true);
     }
     public void ShowWithColor(Color color) {
         Show();
-        if (backgroundImage != null)
+        if (backgroundImage != null)  {
+            defaultColor = color;
             backgroundImage.color = color;
+        }
     }
 
     public void Hide() {
@@ -23,13 +27,13 @@ public class OrangePanel : MonoBehaviour {
     void OnValidate() {
         if (rectTransform == null)
             rectTransform = GetComponent<RectTransform>();
+        if (backgroundImage != null)
+            backgroundImage.color = defaultColor;
+        else
+            Debug.Log($"Panel {name} missing backgroundImage reference!");
     }
 
     void Start() {
         OnValidate();
-    }
-
-    void Update() {
-
     }
 }

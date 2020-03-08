@@ -5,10 +5,21 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class OrangeCursor : MonoBehaviour {
+    [SerializeField] private OrangeAudioBank audioBank;
+    [NaughtyAttributes.Dropdown("GetAudioDropdown")]
+    [SerializeField] private string selectionChangedSound;
+    [SerializeField] private AudioSource audioSource;
+    private GameObject lastSelection;
+
     private RectTransform rectTransform;
     private Vector2 scaleCoeff;
 
     public Vector2 padding;
+
+    public NaughtyAttributes.DropdownList<string> GetAudioDropdown() {
+        if (audioBank == null) return new NaughtyAttributes.DropdownList<string>();
+        return audioBank.GetDropdown();
+    }
 
     void OnValidate() {
         var renderer = GetComponent<Image>();
@@ -43,6 +54,12 @@ public class OrangeCursor : MonoBehaviour {
         }
 
         var currentSelection = EventSystem.current.currentSelectedGameObject;
+        if (currentSelection != lastSelection && currentSelection != null) {
+            if (audioSource != null && audioBank != null) {
+                audioBank.PlaySound(audioSource, selectionChangedSound);
+            }
+        }
+        lastSelection = currentSelection;
         if (currentSelection == null) {
             return;
         }

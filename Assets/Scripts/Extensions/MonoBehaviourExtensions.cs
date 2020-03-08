@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public static class MonoBehaviourExtensions {
@@ -47,5 +48,9 @@ public static class MonoBehaviourExtensions {
     private static IEnumerator LaterCoroutine(float inSeconds, System.Func<IEnumerator> action) {
         yield return new WaitForSeconds(inSeconds);
         yield return action();
+    }
+
+    public static IEnumerator UnloadSceneAsync(this MonoBehaviour b, int sceneBuildIndex) {
+        yield return SceneManager.UnloadSceneAsync(sceneBuildIndex);
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class OrangeSpriteAnimator : MonoBehaviour {
     public string animationName;
     public bool active = true;
-    public OrangeSpriteManager sprites;
+    public OrangeSpriteDB sprites;
     public SpriteRenderer spriteRenderer;
     public UnityEngine.UI.Image image;
     public bool destroyOnDone = true;
@@ -14,9 +14,10 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     private float timeElapsed = 0f;
 
     public void SetAnimation(string animationName) {
+        animator = sprites.GetAnimation(animationName);
+        if (animationName == this.animationName) return;
         timeElapsed = 0f;
         this.animationName = animationName;
-        animator = sprites.GetAnimation(animationName);
         if (animator == null)
             Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}");
     }

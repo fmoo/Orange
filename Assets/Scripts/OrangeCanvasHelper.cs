@@ -1,31 +1,31 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 [ExecuteInEditMode]
 public class OrangeCanvasHelper : MonoBehaviour {
-    public OrangeDisplay display;
-    public UnityEngine.U2D.PixelPerfectCamera ppCamera;
+    [SerializeField] OrangeDisplay display;
+    [SerializeField] UnityEngine.U2D.PixelPerfectCamera ppCamera;
+    [SerializeField] OrangeCursor uiCursor;
+    [SerializeField] OrangeImageFader blackoutLayer;
     private CanvasScaler canvasScaler;
-    public OrangeCursor uiCursor;
 
-    private IList<Selectable> GetUISelectables() {
-        var result = new List<Selectable>();
-        foreach (var selectable in gameObject.GetComponentsInChildren<Selectable>(false)) {
+    private IEnumerable<Selectable> GetUISelectables() {
+        foreach (var selectable in gameObject.GetComponentsInChildren<Selectable>(false  /* include_inactive */)) {
             if (selectable.interactable) {
-                result.Add(selectable);
+                yield return selectable;
             }
         }
-        return result;
     }
     private bool GetUIHasSelectables() {
         var buttons = GetUISelectables();
-        return buttons.Count > 0;
+        return buttons.Any();
     }
     private bool GetAnyUIVisible() {
-        var elements = gameObject.GetComponentsInChildren<RectTransform>(false);
+        var elements = gameObject.GetComponentsInChildren<RectTransform>(false /* include_inactive */);
         return elements.Length > 1;
     }
 
@@ -41,8 +41,8 @@ public class OrangeCanvasHelper : MonoBehaviour {
         selectable.interactable = false;
         if (selectable == EventSystem.current.currentSelectedGameObject) {
             var selectables = GetUISelectables();
-            if (selectables.Count > 0) {
-                EventSystem.current.SetSelectedGameObject(selectables[0].gameObject);
+            if (selectables.Any()) {
+                EventSystem.current.SetSelectedGameObject(selectables.First().gameObject);
             } else {
                 HideCursor();
             }
@@ -59,8 +59,8 @@ public class OrangeCanvasHelper : MonoBehaviour {
         var currentSelectable = EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>();
         if (currentSelectable?.interactable != true) {
             var selectables = GetUISelectables();
-            if (selectables.Count > 0) {
-                currentSelectable = selectables[0];
+            if (selectables.Any()) {
+                currentSelectable = selectables.First();
                 SelectImmediately(currentSelectable);
             }
         }
@@ -88,7 +88,10 @@ public class OrangeCanvasHelper : MonoBehaviour {
         // TODO: Instead of Component, should this be an intermediate class that provides
         // an API to get the RectTransform?
         var rt = component.GetComponent<RectTransform>();
-        if (rt == null) return;
+        if (rt == null) {
+            Debug.LogError($"Attempt to ShowUIPanel on non UI Element, '{component.name}'!");
+            return;
+        }
         ShowUIPanel(rt);
     }
     public void HideUIPanel(RectTransform uiPanel) {
@@ -100,7 +103,10 @@ public class OrangeCanvasHelper : MonoBehaviour {
     }
     public void HideUIPanel(Component component) {
         var rt = component.GetComponent<RectTransform>();
-        if (rt == null) return;
+        if (rt == null) {
+            Debug.LogError($"Attempt to ShowUIPanel on non UI Element, '{component.name}'!");
+            return;
+        }
         HideUIPanel(rt);
     }
 
@@ -112,6 +118,10 @@ public class OrangeCanvasHelper : MonoBehaviour {
         // uiCursor must render on top of menus.  Put it last.
         if (uiCursor != null)
             uiCursor.transform.SetAsLastSibling();
+        // Unless we have a blackout/fader layer.  Then put THAT last.
+        if (blackoutLayer != null)
+            blackoutLayer.transform.SetAsLastSibling();
+        display = OrangeDisplay.Instance;
         DoUpdateSize();
         display.OnResolutionChanged += DoUpdateSize;
     }
@@ -119,6 +129,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
     void DoUpdateSize() {
         var referenceHeight = ppCamera.refResolutionY;
         var referenceWidth = ppCamera.refResolutionX;
+        if (this == null || gameObject == null) return;
         canvasScaler = gameObject.GetOrCreateComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
         canvasScaler.scaleFactor = Mathf.Min(Screen.height / referenceHeight, Screen.width / referenceWidth);
@@ -127,18 +138,18 @@ public class OrangeCanvasHelper : MonoBehaviour {
     void DoFocusIfNone(bool onlyIfNull = false) {
         if (uiCursor == null) return;
         if (!uiCursor.gameObject.activeInHierarchy) return;
-        var selection = EventSystem.current.currentSelectedGameObject;
+        var selection = EventSystem.current?.currentSelectedGameObject;
         if (selection == null) {
             var selectables = GetUISelectables();
-            if (selectables.Count > 0) {
-                SelectImmediately(selectables[0]);
+            if (selectables.Any()) {
+                SelectImmediately(selectables.First());
             }
         } else if (!onlyIfNull) {
             var selectable = selection.GetComponent<Selectable>();
             if (!selectable.gameObject.activeInHierarchy || !selectable.interactable) {
                 var selectables = GetUISelectables();
-                if (selectables.Count > 0) {
-                    SelectImmediately(selectables[0]);
+                if (selectables.Any()) {
+                    SelectImmediately(selectables.First());
                 }
             }
         }
