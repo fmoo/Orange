@@ -15,7 +15,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
 
     private IEnumerable<Selectable> GetUISelectables() {
         foreach (var selectable in gameObject.GetComponentsInChildren<Selectable>(false  /* include_inactive */)) {
-            if (selectable.interactable) {
+            if (selectable.IsInteractable()) {
                 yield return selectable;
             }
         }
@@ -57,7 +57,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
 
     public void ShowCursor() {
         var currentSelectable = EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>();
-        if (currentSelectable?.interactable != true) {
+        if (currentSelectable == null || !currentSelectable.IsInteractable()) {
             var selectables = GetUISelectables();
             if (selectables.Any()) {
                 currentSelectable = selectables.First();
@@ -79,6 +79,11 @@ public class OrangeCanvasHelper : MonoBehaviour {
 
     public void ShowUIPanel(RectTransform uiPanel) {
         uiPanel.gameObject.SetActive(true);
+        var cg = uiPanel.GetOrCreateComponent<CanvasGroup>();
+        cg.blocksRaycasts = true;
+        cg.alpha = 1f;
+        cg.interactable = true;
+
         if (GetUIHasSelectables()) {
             ShowCursor();
         }
@@ -95,7 +100,11 @@ public class OrangeCanvasHelper : MonoBehaviour {
         ShowUIPanel(rt);
     }
     public void HideUIPanel(RectTransform uiPanel) {
-        uiPanel.gameObject.SetActive(false);
+        var cg = uiPanel.GetOrCreateComponent<CanvasGroup>();
+        cg.blocksRaycasts = false;
+        cg.alpha = 0f;
+        cg.interactable = false;
+        // uiPanel.gameObject.SetActive(false);
         if (!GetUIHasSelectables()) {
             HideCursor();
         }
@@ -146,7 +155,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
             }
         } else if (!onlyIfNull) {
             var selectable = selection.GetComponent<Selectable>();
-            if (!selectable.gameObject.activeInHierarchy || !selectable.interactable) {
+            if (!selectable.gameObject.activeInHierarchy || !selectable.IsInteractable()) {
                 var selectables = GetUISelectables();
                 if (selectables.Any()) {
                     SelectImmediately(selectables.First());

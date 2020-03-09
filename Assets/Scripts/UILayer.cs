@@ -12,6 +12,10 @@ public class UILayer : MonoBehaviour {
             ui = GetComponentInParent<UILayerManager>();
     }
 
+    public bool shown { get {
+        return this.gameObject.activeInHierarchy && this.GetComponent<CanvasGroup>()?.interactable == true; 
+    }}
+
     virtual protected void BeforeShow() { }
     virtual protected void BeforeHide() { }
 

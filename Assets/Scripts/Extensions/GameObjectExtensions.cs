@@ -4,29 +4,39 @@ using System.Collections;
 
 public static class GameObjectExtensions {
 
-	public static GameObject FindObject(this GameObject o, string name) {
-		return o.transform.Find(name)?.gameObject;
-	}
+    public static GameObject FindObject(this GameObject o, string name) {
+        return o.transform.Find(name)?.gameObject;
+    }
 
-	public static T GetOrCreateComponent<T>(this GameObject o) where T : Component  {
-		T component = o.GetComponent<T> ();
-		if (component == null) {
-			component = o.AddComponent<T>();
-		}
-		return component;
-	}
+    public static T GetOrCreateComponent<T>(this GameObject o) where T : Component {
+        T component = o.GetComponent<T>();
+        if (component == null) {
+            component = o.AddComponent<T>();
+        }
+        return component;
+    }
 
-	public static GameObject GetOrCreateGameObject(this GameObject o, string name) {
-		Transform t = o.transform.Find (name);
-		if (t != null) {
-			return t.gameObject;
-		} else {
-			GameObject o2 = new GameObject(name);
-			o2.transform.SetParent(o.transform);
-			o2.transform.localPosition = Vector3.zero;
-			o2.transform.localScale = Vector3.one;
-			return o2;
-		}
+    public static GameObject GetOrCreateGameObject(this GameObject o, string name) {
+        Transform t = o.transform.Find(name);
+        if (t != null) {
+            return t.gameObject;
+        } else {
+            GameObject o2 = new GameObject(name);
+            o2.transform.SetParent(o.transform);
+            o2.transform.localPosition = Vector3.zero;
+            o2.transform.localScale = Vector3.one;
+            return o2;
+        }
+    }
+
+    public static void DestroyChildren(this GameObject o) {
+        foreach (Transform child in o.transform) {
+            if (!Application.isPlaying) {
+                Object.DestroyImmediate(child.gameObject);
+            } else {
+                Object.Destroy(child.gameObject);
+            }
+        }
     }
 
 #if UNITY_EDITOR

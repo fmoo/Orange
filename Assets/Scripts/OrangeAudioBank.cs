@@ -4,8 +4,8 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "AudioBank", menuName = "Data/Audio Bank", order = 3)]
 public class OrangeAudioBank : ScriptableObject {
-    public OrangeAudio[] clips = new OrangeAudio[0];
-    private Dictionary<string, OrangeAudio> clipIndex = new Dictionary<string, OrangeAudio>();
+    public OrangeAudioEntry[] clips = new OrangeAudioEntry[0];
+    private Dictionary<string, OrangeAudioEntry> clipIndex = new Dictionary<string, OrangeAudioEntry>();
 
     private void Initialize() {
         if ((clipIndex?.Count ?? 0) > 0) return;
@@ -19,9 +19,9 @@ public class OrangeAudioBank : ScriptableObject {
         source.PlayOneShot(sound.clip, sound.volume);
     }
 
-    public OrangeAudio GetSound(string clipName) {
+    public OrangeAudioEntry GetSound(string clipName) {
         Initialize();
-        if (clipIndex.TryGetValue(clipName, out OrangeAudio audio)) {
+        if (clipIndex.TryGetValue(clipName, out OrangeAudioEntry audio)) {
             return audio;
         }
         Debug.LogError($"No audio for '{clipName} found in {name}");
@@ -46,7 +46,7 @@ public class OrangeAudioBank : ScriptableObject {
 }
 
 [System.Serializable]
-public class OrangeAudio {
+public class OrangeAudioEntry {
     public string name;
     public AudioClip clip;
     [Range(0f, 1f)]

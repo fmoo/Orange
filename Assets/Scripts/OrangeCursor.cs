@@ -8,6 +8,7 @@ public class OrangeCursor : MonoBehaviour {
     [SerializeField] private OrangeAudioBank audioBank;
     [NaughtyAttributes.Dropdown("GetAudioDropdown")]
     [SerializeField] private string selectionChangedSound;
+    [NaughtyAttributes.Dropdown("GetAudioDropdown")]
     [SerializeField] private AudioSource audioSource;
     private GameObject lastSelection;
 
