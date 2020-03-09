@@ -25,6 +25,7 @@ public class OrangeCameraFollow : MonoBehaviour {
 
     public float noScrollRatio = 0.7f;
     public float cameraSpeed = 2f;
+    private bool doneMoving = true;
     void DoUpdateNaive() {
         // This approach kind of sucks. Ideally we'd have some sort of
         // bounding rectangle and if the player moves outside of it, we move
@@ -37,6 +38,7 @@ public class OrangeCameraFollow : MonoBehaviour {
         Vector3 cp;
         innerBounds.size = (innerBounds.size * noScrollRatio) + (Vector3.forward * 100f);
         if (innerBounds.Contains(v)) {
+            doneMoving = true;
             return;
         } else {
             cp = innerBounds.ClosestPoint(v);
@@ -56,16 +58,16 @@ public class OrangeCameraFollow : MonoBehaviour {
             }
         }
 
+        doneMoving = (newPosition - cameraTransform.position).magnitude < 0.001f;
         cameraTransform.position = newPosition;
         // t.position = new Vector3(v.x, v.y, t.position.z);
     }
 
     public IEnumerator WaitForMovementDone() {
+        doneMoving = false;
         var oldScrollRatio = noScrollRatio;
         noScrollRatio = 0f;
-        while (true) {
-            var dist = (transform.position.xy() - GetTargetBounds().center.xy()).sqrMagnitude;
-            if (dist < 0.01f) break;
+        while (!doneMoving) {
             yield return new WaitForSeconds(0.1f);
         }
         noScrollRatio = oldScrollRatio;
