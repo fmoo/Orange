@@ -17,12 +17,20 @@ public class OrangeCursor : MonoBehaviour {
 
     public Vector2 padding;
 
+    public bool reparentWithSelection = false;
+    [SerializeField] private Transform defaultParent;
+
+    public bool animateMotion = false;
+    public float scaleSpeed = 800f;
+    public float moveSpeed = 800f;
+
     public NaughtyAttributes.DropdownList<string> GetAudioDropdown() {
         if (audioBank == null) return new NaughtyAttributes.DropdownList<string>();
         return audioBank.GetDropdown();
     }
 
     void OnValidate() {
+        if (defaultParent == null) defaultParent = transform;
         var renderer = GetComponent<Image>();
         renderer.raycastTarget = false;
         rectTransform = this.GetOrCreateComponent<RectTransform>();
@@ -36,7 +44,9 @@ public class OrangeCursor : MonoBehaviour {
     // Update is called once per frame
     private List<RaycastResult> pointerResults = new List<RaycastResult>();
     private Vector3 lastMousePosition = Vector3.zero;
-    void Update() {
+
+    void UpdateForMouse() {
+        if (MouseButton.LEFT.Pressed) return;
         var mousePosition = Input.mousePosition;
         if (mousePosition != lastMousePosition) {
             // TODO: Can this be memoized/reused?
@@ -47,26 +57,58 @@ public class OrangeCursor : MonoBehaviour {
             EventSystem.current.RaycastAll(pointerData, pointerResults);
             foreach (var pointerResult in pointerResults) {
                 var selectable = pointerResult.gameObject.GetComponent<Selectable>();
-                if (selectable != null && selectable.gameObject != EventSystem.current.currentSelectedGameObject && selectable.interactable) {
+                if (selectable != null && selectable.gameObject != EventSystem.current.currentSelectedGameObject && selectable.enabled && selectable.IsInteractable()) {
                     selectable.Select();
                 }
             }
             lastMousePosition = mousePosition;
         }
+    }
+    void Update() {
+        UpdateForMouse();
 
         var currentSelection = EventSystem.current.currentSelectedGameObject;
         if (currentSelection != lastSelection && currentSelection != null) {
             if (audioSource != null && audioBank != null) {
-                audioBank.PlaySound(audioSource, selectionChangedSound);
+                audioBank.PlayEffect(audioSource, selectionChangedSound);
+                // Autoscroll parent scroll rect containers so that the selection is visible.
+                // This logic probably doesn't work with nested scrollrects.  Don't nest scrollrects. 
+                var scroller = currentSelection.GetComponentInParent<ScrollRect>();
+                if (scroller != null && currentSelection.GetComponent<Scrollbar>() == null) {
+                    var corners = scroller.GetComponent<RectTransform>().GetWorldCorners();
+                    var scrollTop = corners[3].y;
+                    var scrollBottom = corners[1].y;
+                    currentSelection.GetComponent<RectTransform>().GetWorldCorners(corners);
+                    var itemTop = corners[3].y;
+                    var itemBottom = corners[1].y;
+
+                    if (scrollTop > itemTop) {
+                        scroller.content.transform.position += Vector3.up * (scrollTop - itemTop);
+                    } else if (scrollBottom < itemBottom) {
+                        scroller.content.transform.position -= Vector3.up * (itemBottom - scrollBottom);
+                    }
+                }
+                if (reparentWithSelection) {
+                    transform.SetParent(currentSelection.transform.parent);
+                    transform.SetSiblingIndex(currentSelection.transform.GetSiblingIndex());
+                }
             }
         }
         lastSelection = currentSelection;
         if (currentSelection == null) {
             return;
         }
-        // TODO: Add a flag to support *animating* movement / size to the new values
-        rectTransform.position = currentSelection.transform.position;
-        rectTransform.sizeDelta = padding + currentSelection.GetComponent<RectTransform>().sizeDelta * scaleCoeff;
+
+        RectTransform targetRect = currentSelection.GetComponent<RectTransform>();
+        var targetSize = padding + targetRect.rect.size * scaleCoeff;
+
+        if (animateMotion) {
+            rectTransform.position = Vector3.MoveTowards(rectTransform.position, targetRect.GetWorldCenter(), Time.deltaTime * moveSpeed);
+            rectTransform.sizeDelta = Vector2.MoveTowards(rectTransform.sizeDelta, targetSize, Time.deltaTime * scaleSpeed);
+        } else {
+            rectTransform.position = targetRect.GetWorldCenter();
+            rectTransform.sizeDelta = targetSize;
+        }
     }
 
     public void SnapToTarget(Selectable target) {
