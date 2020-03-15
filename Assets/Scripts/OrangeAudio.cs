@@ -11,7 +11,7 @@ public class OrangeAudio : MonoBehaviour {
     [SerializeField] private string soundName;
 
     public void Play() {
-        audioBank.PlaySound(audioSource, soundName);
+        audioBank.PlayEffect(audioSource, soundName);
     }
 
 #if UNITY_EDITOR

@@ -8,35 +8,40 @@ public class UILayerManager : MonoBehaviour {
     public OrangeImageFader overlay;
     public OrangeImageFader underlay;
 
-    [SerializeField] OrangeAudioBank audioBank;
+    [SerializeField] OrangeAudioBank bgmBank;
+    [SerializeField] OrangeAudioBank soundBank;
     [SerializeField] AudioSource audioSource;
+    [SerializeField] AudioSource audioLoopSource;
 
-    private const string CONFIRM_SOUND = "confirm";
-    private const string CANCEL_SOUND = "cancel";
-    private const string HOVER_SOUND = "selectionChanged";
+    [SerializeField] string confirmSoundName = "confirm";
+    [SerializeField] string cancelSoundName = "cancel";
+    [SerializeField] string hoverSoundName = "selectionChanged";
 
+    public void PlayBGM(string clipName) {
+        bgmBank.PlayLoopable(audioSource, audioLoopSource, clipName);
+    }
     public void PlayConfirmSound() {
-        PlaySound(CONFIRM_SOUND);
+        PlaySound(confirmSoundName);
     }
     public void PlayCancelSound() {
-        PlaySound(CANCEL_SOUND);
+        PlaySound(cancelSoundName);
     }
     public void PlayHoverSound() {
-        PlaySound(HOVER_SOUND);
+        PlaySound(hoverSoundName);
     }
     public System.Action WithConfirmSound(System.Action action) {
-        return WithAudio("confirm", action);
+        return WithSound("confirm", action);
     }
     public System.Action WithCancelSound(System.Action action) {
-        return WithAudio("cancel", action);
+        return WithSound("cancel", action);
     }
     public System.Action WithHoverSound(System.Action action) {
-        return WithAudio("selectionChanged", action);
+        return WithSound("selectionChanged", action);
     }
     private void PlaySound(string clipName) {
-        audioBank.PlaySound(audioSource, clipName);
+        soundBank.PlayEffect(audioSource, clipName);
     }
-    private System.Action WithAudio(string clipName, System.Action action) {
+    private System.Action WithSound(string clipName, System.Action action) {
         return () => {
             PlaySound(clipName);
             action();
@@ -51,6 +56,7 @@ public class UILayerManager : MonoBehaviour {
             canvas.HideCursor();
         }
 
+        StartAudioFade(0f, fadeOutDuration);
         yield return overlay.StartFade(Color.clear, Color.black, fadeOutDuration);
         var currentScene = SceneManager.GetActiveScene().buildIndex;
         yield return SceneManager.LoadSceneAsync(targetSceneBuildIndex, LoadSceneMode.Additive);
@@ -63,7 +69,13 @@ public class UILayerManager : MonoBehaviour {
             newUI.UnloadSceneAsync(currentScene),
             () => {
                 newUI.StartCoroutine(newUI.overlay.StartFade(Color.black, Color.clear, 1.0f));
+                // TODO: Fade in the Audio?
             }
         );
+    }
+
+    public void StartAudioFade(float targetVolume, float duration) {
+        if (audioSource != null) StartCoroutine(audioSource.WaitForAudioFade(targetVolume, duration));
+        if (audioLoopSource != null) StartCoroutine(audioLoopSource.WaitForAudioFade(targetVolume, duration));
     }
 }
