@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.U2D;
 using UnityEngine.EventSystems;
 
 [ExecuteInEditMode]
 public class OrangeCanvasHelper : MonoBehaviour {
-    [SerializeField] OrangeDisplay display;
-    [SerializeField] UnityEngine.U2D.PixelPerfectCamera ppCamera;
+    [SerializeField] PixelPerfectCamera pixelPerfectCamera;
+    [SerializeField] CanvasScaler canvasScaler;
+
     [SerializeField] OrangeCursor uiCursor;
     [SerializeField] OrangeImageFader blackoutLayer;
-    private CanvasScaler canvasScaler;
 
     private IEnumerable<Selectable> GetUISelectables() {
-        foreach (var selectable in gameObject.GetComponentsInChildren<Selectable>(false  /* include_inactive */)) {
-            if (selectable.IsInteractable()) {
+        foreach (var selectable in gameObject.GetComponentsInChildren<Button>(false  /* include_inactive */)) {
+            if (selectable.IsInteractable() && selectable.navigation.mode != Navigation.Mode.None) {
                 yield return selectable;
             }
         }
@@ -121,6 +122,14 @@ public class OrangeCanvasHelper : MonoBehaviour {
 
     void Update() {
         DoFocusIfNone(true);
+        UpdateScaler();
+    }
+
+    void OnValidate() {
+        if (canvasScaler == null)
+            canvasScaler = GetComponent<CanvasScaler>();
+        if (pixelPerfectCamera == null)
+            pixelPerfectCamera = (Camera.main ?? Camera.current).GetComponent<PixelPerfectCamera>();
     }
 
     void Start() {
@@ -130,18 +139,12 @@ public class OrangeCanvasHelper : MonoBehaviour {
         // Unless we have a blackout/fader layer.  Then put THAT last.
         if (blackoutLayer != null)
             blackoutLayer.transform.SetAsLastSibling();
-        display = OrangeDisplay.Instance;
-        DoUpdateSize();
-        display.OnResolutionChanged += DoUpdateSize;
     }
 
-    void DoUpdateSize() {
-        var referenceHeight = ppCamera.refResolutionY;
-        var referenceWidth = ppCamera.refResolutionX;
-        if (this == null || gameObject == null) return;
-        canvasScaler = gameObject.GetOrCreateComponent<CanvasScaler>();
+    void UpdateScaler() {
+        if (canvasScaler == null || pixelPerfectCamera == null) return;
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-        canvasScaler.scaleFactor = Mathf.Min(Screen.height / referenceHeight, Screen.width / referenceWidth);
+        canvasScaler.scaleFactor = Mathf.Min(Screen.height / pixelPerfectCamera.refResolutionY, Screen.width / pixelPerfectCamera.refResolutionX);
     }
 
     void DoFocusIfNone(bool onlyIfNull = false) {
