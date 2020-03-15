@@ -44,6 +44,18 @@ public class OrangeSpriteDB : ScriptableObject {
         }
     }
 
+#if UNITY_EDITOR
+    public static NaughtyAttributes.DropdownList<string> GetEditorSpriteDropdown(OrangeSpriteDB db) {
+        var result = new NaughtyAttributes.DropdownList<string>();
+        if (db == null) return null;
+        var names = db.sprites.Select(s => s.name).ToList();
+        names.Sort();
+        foreach (var name in names) {
+            result.Add(name, name);
+        }
+        return result;
+    }
+#endif
 
     [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
     public Sprite[] importSprites;
