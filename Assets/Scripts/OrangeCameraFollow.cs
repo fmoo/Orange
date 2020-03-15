@@ -52,8 +52,8 @@ public class OrangeCameraFollow : MonoBehaviour {
         var newPosition = cameraTransform.position + (cp2 - cp);
         newPosition.z = cameraTransform.position.z;
 
-        if (cameraBounds is Bounds cb) {
-            if (cb.Contains(newPosition) != true) {
+        if (cameraBounds is Bounds cb && cb.size.x > innerBounds.extents.x && cb.size.y > innerBounds.extents.y) {
+            if (!cb.Contains(newPosition)) {
                 newPosition = cb.ClosestPoint(newPosition);
             }
         }
