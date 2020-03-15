@@ -14,7 +14,22 @@ public class OrangePanel : MonoBehaviour {
     }
     public void ShowWithColor(Color color) {
         Show();
-        if (backgroundImage != null)  {
+        if (backgroundImage != null) {
+            defaultColor = color;
+            backgroundImage.color = color;
+        }
+    }
+    public void SelectFirstElement<TButton>() where TButton : Selectable {
+        var selectables = GetComponentsInChildren<TButton>();
+        foreach (var selectable in selectables) {
+            if (selectable.IsInteractable()) {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(selectable.gameObject);
+                break;
+            }
+        }
+    }
+    public void SetColor(Color color) {
+        if (backgroundImage != null) {
             defaultColor = color;
             backgroundImage.color = color;
         }
