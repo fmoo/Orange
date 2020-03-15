@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class OrangePanel : MonoBehaviour {
     [SerializeField] RectTransform rectTransform;
     [SerializeField] Image backgroundImage;
-    [SerializeField] Color defaultColor = new Color(Color.blue.r, Color.blue.g, Color.blue.b, 0.5f);
+    [SerializeField] Color defaultColor = new Color(Color.blue.r, Color.blue.g, Color.blue.b, 0.75f);
     [SerializeField] CanvasGroup canvasGroup;
 
     public void Show() {
