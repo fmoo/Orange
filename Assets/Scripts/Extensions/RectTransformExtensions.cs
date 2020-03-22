@@ -6,7 +6,19 @@ public static class RectTransformExtensions {
 
     public static void Clear(this RectTransform rectTransform) {
         foreach (RectTransform child in rectTransform) {
-            Object.Destroy(child.gameObject);
+            if (child.GetComponent<OrangeCursor>() != null) {
+                continue;
+            }
+            if (Application.isPlaying) {
+                Object.Destroy(child.gameObject);
+            } else {
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.delayCall += () => {
+                    if (child?.gameObject != null)
+                        Object.DestroyImmediate(child.gameObject);
+                };
+#endif
+            }
         }
     }
 
