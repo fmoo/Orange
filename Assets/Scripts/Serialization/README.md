@@ -8,7 +8,7 @@ When using `JsonUtility` to serialize a `System.Serializable` blob of game State
 serializes `ScriptableObject` using a numeric local reference ID, which is not consistent
 between runs, and therefore breaks serialization beteween sessions.  Normal GameObjects when
 using the editor Asset Database don't suffer from this as its yaml/binary encoding uses the asset
-guid to reference foreign objects, which is a bit smarter.
+guid to reference foreign objects, which is stable.
 
 To solve this, we:
 * Create a container/wrapper class for `ScriptableObject` called `ScriptableObjectReference` that implements Unity's `ISerializationCallbackReceiver` protocol to retrieve the asset using its GUID instead of the default unstable local identifier.
