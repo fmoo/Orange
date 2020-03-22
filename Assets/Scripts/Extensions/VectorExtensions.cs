@@ -19,4 +19,11 @@ public static class VectorExtensions {
     public static Vector3 LerpSinUnclamped(this Vector3 a, Vector3 b, float t) {
         return Vector3.Lerp(a, b, Mathf.Sin(t * Mathf.PI));
     }
+
+    public static int ManhattanDistance(this Vector2Int a, Vector2Int b) {
+        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+    }
+    public static float ManhattanDistance(this Vector2 a, Vector2 b) {
+        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+    }
 }
