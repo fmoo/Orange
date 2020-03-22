@@ -27,7 +27,6 @@ do this:
 ```cs
   [SORefType(typeof(MyFoo))]
   [SerializeField] private ScriptableObjectReference fooRef; 
-  // Optional but RECOMMENDED for type safety:
   public MyFoo foo {
     get {
       return this.fooRef.value as MyFoo;
@@ -37,11 +36,5 @@ do this:
     }
   }
 ```
-5. If you did not include the typed property setter in step 4, any callsites setting `foo` will need to be updated to something like this:
-```cs
-  saveState.fooRef = new ScriptableObjectReference(myFooAsset);
-```
 
 That's it!
-
-## QoL Improvements
