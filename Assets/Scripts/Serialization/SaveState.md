@@ -131,7 +131,14 @@ If your Game State references ScriptableObject instances for deduplication, you 
 
 ### OdinSerializer
 
-TBD
+Odin provides a free serializer (the last thing [on this page](https://odininspector.com/download)) that supports deeper than JSON without modifications.
+
+While this may be desirable, if you are using ScriptableObject to deduplicate data, this has an undesirable side effect of:
+- blowing up your encoded data size
+- still requires you to track and manage references with a unity object reference mapping
+- (?) probably doesn't play nice with SerializableScriptableObject trick I use for JsonUtility
+
+Docs on the quirks of using Odin for serializing unity objects are included [in their examples](https://github.com/TeamSirenix/odin-serializer#basic-usage-of-odinserializer)
 
 ## 3. Saving and restoring the encoded files
 
