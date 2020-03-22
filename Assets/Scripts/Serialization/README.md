@@ -38,3 +38,12 @@ do this:
 ```
 
 That's it!
+
+## Ew, Why's it so Ugly?!
+
+Unfortunately, Unity 2019 and older do not support either serialization of or property inspection of Generics other than `List<T>`.
+Once Unity adds support for this, we should be able to do something like this instead for step 4:
+```cs
+  [SerializeField] private ScriptableObjectReference<MyFoo> foo;
+```
+Though this would also require updating all callers to use `foo.value` instead of `foo` directly as well.
