@@ -36,6 +36,7 @@ public class OrangeAudioBank : ScriptableObject {
     }
 
     public void PlayEffect(AudioSource source, string name) {
+        // Debug.Log($"!! Play Effect: {name}");
         var audio = GetAudio(name);
         if (audio.loop) {
             Debug.LogError("Use PlayLoopable for looping audio!");

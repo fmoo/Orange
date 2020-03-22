@@ -17,6 +17,9 @@ public class OrangeCanvasHelper : MonoBehaviour {
     private IEnumerable<Selectable> GetUISelectables() {
         foreach (var selectable in gameObject.GetComponentsInChildren<Button>(false  /* include_inactive */)) {
             if (selectable.IsInteractable() && selectable.navigation.mode != Navigation.Mode.None) {
+                var rt = selectable.GetComponent<RectTransform>();
+                if (rt == null) continue;
+                if (rt.rect.width == 0f || rt.rect.height == 0f) continue;
                 yield return selectable;
             }
         }
@@ -57,21 +60,22 @@ public class OrangeCanvasHelper : MonoBehaviour {
     }
 
     public void ShowCursor() {
-        var currentSelectable = EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>();
-        if (currentSelectable == null || !currentSelectable.IsInteractable()) {
-            var selectables = GetUISelectables();
-            if (selectables.Any()) {
-                currentSelectable = selectables.First();
-                SelectImmediately(currentSelectable);
-            }
-        }
+        // var currentSelectable = EventSystem.current.currentSelectedGameObject?.GetComponent<Selectable>();
+        // if (currentSelectable == null || !currentSelectable.IsInteractable()) {
+        //     var selectables = GetUISelectables();
+        //     if (selectables.Any()) {
+        //         currentSelectable = selectables.First();
+        //         Debug.Log("ShowCursor!");
+        //         SelectImmediately(currentSelectable);
+        //     }
+        // }
         // TODO: if the cursor was *not* visible, jump the cursor *immediately* to the currentSelectedGameObject
-        var wasActive = uiCursor.gameObject.activeSelf;
+        // var wasActive = uiCursor.gameObject.activeSelf;
         uiCursor.gameObject.SetActive(true);
-        DoFocusIfNone();
-        if (!wasActive) {
-            uiCursor.SnapToTarget(currentSelectable);
-        }
+        // DoFocusIfNone();
+        // if (!wasActive) {
+        //     uiCursor.SnapToTarget(currentSelectable);
+        // }
     }
     public void HideCursor() {
         uiCursor.gameObject.SetActive(false);
@@ -88,7 +92,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
         if (GetUIHasSelectables()) {
             ShowCursor();
         }
-        DoFocusIfNone();
+        // DoFocusIfNone();
     }
     public void ShowUIPanel(Component component) {
         // TODO: Instead of Component, should this be an intermediate class that provides
@@ -109,7 +113,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
         if (!GetUIHasSelectables()) {
             HideCursor();
         }
-        DoFocusIfNone();
+        // DoFocusIfNone();
     }
     public void HideUIPanel(Component component) {
         var rt = component.GetComponent<RectTransform>();
@@ -121,7 +125,8 @@ public class OrangeCanvasHelper : MonoBehaviour {
     }
 
     void Update() {
-        DoFocusIfNone(true);
+        // DoFocusIfNone(true);
+        DoFocusIfNone();
         UpdateScaler();
     }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class OrangePanel : MonoBehaviour {
     [SerializeField] RectTransform rectTransform;
@@ -19,11 +20,11 @@ public class OrangePanel : MonoBehaviour {
             backgroundImage.color = color;
         }
     }
-    public void SelectFirstElement<TButton>() where TButton : Selectable {
-        var selectables = GetComponentsInChildren<TButton>();
+    public void SelectFirstElement<T>() where T : Selectable {
+        var selectables = GetComponentsInChildren<T>();
         foreach (var selectable in selectables) {
             if (selectable.IsInteractable()) {
-                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(selectable.gameObject);
+                selectable.Select();
                 break;
             }
         }

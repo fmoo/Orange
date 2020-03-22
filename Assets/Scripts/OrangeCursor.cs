@@ -93,7 +93,8 @@ public class OrangeCursor : MonoBehaviour {
                 }
                 if (reparentWithSelection) {
                     transform.SetParent(currentSelection.transform.parent);
-                    transform.SetSiblingIndex(currentSelection.transform.GetSiblingIndex());
+                    transform.SetAsFirstSibling();
+                    transform.SetSiblingIndex(currentSelection.transform.GetSiblingIndex() - 1);
                 }
             }
         }

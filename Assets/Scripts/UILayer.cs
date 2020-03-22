@@ -23,11 +23,15 @@ public class UILayer : MonoBehaviour {
     virtual protected void BeforeHide() { }
 
     public void Show() {
+        Show(true);
+    }
+
+    public void Show(bool autofocus) {
         onBeforeShow?.Invoke();
         BeforeShow();
         var wasVisible = this.shown;
         ui.canvas.ShowUIPanel(this);
-        if (!wasVisible && autofocusPanel != null) {
+        if (autofocus && !wasVisible && autofocusPanel != null) {
             autofocusPanel.SelectFirstElement<UnityEngine.UI.Button>();
         }
     }
