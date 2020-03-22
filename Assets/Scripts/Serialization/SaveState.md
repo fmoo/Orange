@@ -1,10 +1,10 @@
 # Managing Save Games in Unity with ScriptableObject
 
-In general, it is Good Practice to separate your saveable "game state" from the components and game objects in your scene graph.
+In general, it is *Good Practice* to separate your saveable "game state" from the components and game objects in your Unity scene graph.
 
-On the other hand, it is A Pain In The Ass to regenerate GameObjects and Components from data structures managed outside of the scene graph.
+On the other hand, it is *A Pain In The Ass* to regenerate GameObjects and Components from data structures managed outside of the scene graph.
 
-ScriptableObject provides a conventient way to centralize, deduplicate, and isolate your game state from your scene graph, and encourages patterns that minimize creation of extra GameObjects/Components for tracking data.
+ScriptableObject provides a middle ground as convenient way to centralize, deduplicate, and isolate your game state from your scene graph, and encourages patterns that minimize creation of extra GameObjects/Components for tracking data.
 
 I've documented this technique below, providing a ton of context on Serialization and State in general in Unity along the way.
 
