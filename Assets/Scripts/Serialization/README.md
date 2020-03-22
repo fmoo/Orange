@@ -12,6 +12,7 @@ To solve this, we:
 * Create a container/wrapper class for `ScriptableObject` called `ScriptableObjectReference` that implements Unity's `ISerializationCallbackReceiver` protocol to retrieve the asset using its GUID instead of the default unstable local identifier.
 * Create a new base class alternative for `ScriptableObject`, called `SerializableScriptableObject` that burns the asset GUID into the serialized `.asset` file for the non-editor runtime to be able to access.
 * Provide an field annotation, `[SORefType(typeof MyScriptableObject)]` to annotate your `ScriptableObjectReference` fields with, so that the editor restricts Inspector assigment to the proper types, and hides the unnecessary GUID/struct internals.
+* Include an explicit API, `ScriptableObjectReference.InitScriptableObjectCache()` to prepare the ScriptableObjectReference GUID lookup using all your `SerializableScriptableObject` .asset instances that live in `Resources` folders.
 
 ## How do I use it?
 
