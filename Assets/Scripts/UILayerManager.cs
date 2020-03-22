@@ -16,18 +16,22 @@ public class UILayerManager : MonoBehaviour {
     [SerializeField] string confirmSoundName = "confirm";
     [SerializeField] string cancelSoundName = "cancel";
     [SerializeField] string hoverSoundName = "selectionChanged";
+    [SerializeField] string errorSoundName = "error";
 
     public void PlayBGM(string clipName) {
         bgmBank.PlayLoopable(audioSource, audioLoopSource, clipName);
     }
     public void PlayConfirmSound() {
-        PlaySound(confirmSoundName);
+        PlaySFX(confirmSoundName);
     }
     public void PlayCancelSound() {
-        PlaySound(cancelSoundName);
+        PlaySFX(cancelSoundName);
     }
     public void PlayHoverSound() {
-        PlaySound(hoverSoundName);
+        PlaySFX(hoverSoundName);
+    }
+    public void PlayErrorSound() {
+        PlaySFX(errorSoundName);
     }
     public System.Action WithConfirmSound(System.Action action) {
         return WithSound("confirm", action);
@@ -38,12 +42,12 @@ public class UILayerManager : MonoBehaviour {
     public System.Action WithHoverSound(System.Action action) {
         return WithSound("selectionChanged", action);
     }
-    private void PlaySound(string clipName) {
+    public void PlaySFX(string clipName) {
         soundBank.PlayEffect(audioSource, clipName);
     }
     private System.Action WithSound(string clipName, System.Action action) {
         return () => {
-            PlaySound(clipName);
+            PlaySFX(clipName);
             action();
         };
     }
