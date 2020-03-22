@@ -1,7 +1,5 @@
 # Orange/Serialization
 
-This is a WIP, but I've verified the basic functionality works.
-
 ## Why?
 
 When using `JsonUtility` to serialize a `System.Serializable` blob of game State, Unity
@@ -48,3 +46,8 @@ Once Unity adds support for this, we should be able to do something like this in
   [SerializeField] private ScriptableObjectReference<MyFoo> foo;
 ```
 Though this would also require updating all callers to use `foo.value` instead of `foo` directly as well.
+
+## Alternatives
+
+- [OdinSerializer](https://github.com/TeamSirenix/odin-serializer) - Really powerful serializer.  Does **deep** serialization of your game state heirarchy, which is fast, but may result in excessively large or unexpectedly duplicate/aliased data.  May be customizable to support this feature, but it was not obvious from the docs, and the compiler warnings on 2019.3 annoyed me.
+- **Manual type mappings** - With this approach, you either don't include ScriptableObjects in your save state blob, or you complement them with an `enum` type that you can use to reconstruct the references with manual logic after load.  This approach requires you to have extra logic to recreate your object references, so adding a new one means updating 2-3 different locations, which is a lot of overhead that ScriptableObjects are supposed to be saving you.
