@@ -46,8 +46,9 @@ When using `[System.Serializable]` there are two ways to mark a field for serial
 
 While `[System.Serializable]` is super useful in a lot of ways, it can be a nightmare to copy all these fields around.
 
-This is where `ScriptableObject` is super useful: You can put any shared, readonly data on a `ScriptableObject`,
-and make all your mutable things refer to it.
+`ScriptableObject` can be a really useful tool: it provides a way to centralize, deduplicate, and isolate your game state from your scene graph, and encourages patterns that minimize creation of extra GameObjects/Components for tracking data.
+
+You can put any shared, readonly data on a `ScriptableObject`, and make all your mutable things refer to it.
 
 Consider the following:
 ```
@@ -72,17 +73,6 @@ update the `.asset` file once place, and all your references get updated immedia
 
 There are some gotchas here, so, **consult [this doc](https://github.com/fmoo/Orange/tree/master/Assets/Scripts/Serialization)
 for more details on the challenges here**.
-
-
-### Managing Save State in Unity with ScriptableObject
-
-In general, it is *Good Practice* to separate your saveable "game state" from the components and game objects in your Unity scene graph.
-
-On the other hand, it is *A Pain In The Ass* to regenerate GameObjects and Components from data structures managed outside of the scene graph.
-
-ScriptableObject provides a middle ground as convenient way to centralize, deduplicate, and isolate your game state from your scene graph, and encourages patterns that minimize creation of extra GameObjects/Components for tracking data.
-
-TBD: MORE ON THIS BELOW
 
 
 ## 2. Encoding and decoding the data
