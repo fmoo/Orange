@@ -37,12 +37,10 @@ extremely common way of converting objects to strings, which you can easily save
 
 `[System.Serializable]` is an annotation you can put on a (non-MonoBehaviour/ScriptableObject) `public class` or `public struct`
 that tells other C# programs that its instances should be convertable to strings.  The Unity property inspector also supports
-expanding and editing objects of this type in the property inspector.  For example, if you define a class:
+expanding and editing objects of this type.  For example, if you define a class:
 ```
 [System.Serializable]
 public class SaveState {
-[System.Serializable]
-public class SGSaveState {
     public bool isValid = false;
     public float lastLoadTime = 0;
     public int money = 1000;
@@ -52,6 +50,8 @@ public class SGSaveState {
 ```
 
 Any references to this class in a `MonoBehavior` or `ScriptableObject` will enumerate these fields in their property inspector.
+
+TBD: Screenshot
 
 ## `public` vs. `[SerializeField] private`
 
