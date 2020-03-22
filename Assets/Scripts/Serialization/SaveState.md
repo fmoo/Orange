@@ -1,43 +1,24 @@
-# Managing Save Games in Unity with ScriptableObject
+# How To Save Game State in Unity
 
-In general, it is *Good Practice* to separate your saveable "game state" from the components and game objects in your Unity scene graph.
+When talking about saving your app, there are three main parts to the problem:
 
-On the other hand, it is *A Pain In The Ass* to regenerate GameObjects and Components from data structures managed outside of the scene graph.
+1. Organizing your game data
+2. Encoding and decoding the data
+3. Saving and Restoring the encoded files
 
-ScriptableObject provides a middle ground as convenient way to centralize, deduplicate, and isolate your game state from your scene graph, and encourages patterns that minimize creation of extra GameObjects/Components for tracking data.
+In general this means:
 
-I've documented this technique below, providing a ton of context on Serialization and State in general in Unity along the way.
+1. Create shared instances of `public class`es with the `[System.Serializable]` annotation
+2. Convert those shared instances to and from JSON with `JsonUtility`
+3. Write them to a file on the device.
 
-Hope you enjoy this doc!
+## 1. Organizing Your Game Data
 
-## Can't I just put my Save State in a ScriptableObject and be done?
+### Using `[System.Serializable]` on Structures
 
-While this works from inside the editor in play mode, modifications to ScriptableObject .asset files **are not persisted**
-when running a standalone builds of your application.  All your game progress will get lost every time you restart the app.
-
-## What could I do?
-
-In general, you should be only have **read-only data** in your ScriptableObjects.  Things like base stats for your
-characters, weapons, or items, sprite/audio name indexes and mappings, etc.
-
-For mutable data that you'd like to persist, use a `public class` or `public struct` with the `[System.Serializable]`
-annotation.  If you want your save state to directly reference a ScriptableObject, consult [this doc](https://github.com/fmoo/Orange/tree/master/Assets/Scripts/Serialization)
-for more details on the challenges here.
-
-## But this article is titled "Managing Save Games in Unity with ScriptableObject"!
-
-I'll get to that in a bit.  Want to cover some fundamentals first.
-
-## JsonUtility
-
-`JsonUtility` is [Unity's built-in JSON encoder](https://docs.unity3d.com/ScriptReference/JsonUtility.html).  JSON is an
-extremely common way of converting objects to strings, which you can easily save and load from users' devices.
-
-## System.Serializable
-
-`[System.Serializable]` is an annotation you can put on a (non-MonoBehaviour/ScriptableObject) `public class` or `public struct`
-that tells other C# programs that its instances should be convertable to strings.  The Unity property inspector also supports
-expanding and editing objects of this type.  For example, if you define a class:
+`[System.Serializable]` is an annotation you can put on a (**non-MonoBehaviour/ScriptableObject**) `public class` or `public struct`
+that tells other C# code that its instances and fields are "encodable".  This includes telling the Unity property inspector that it can
+visualize and enable editing of objects of these type.  For example, if you define a class:
 ```
 [System.Serializable]
 public class SaveState {
@@ -53,18 +34,19 @@ Any references to this class in a `MonoBehavior` or `ScriptableObject` will enum
 
 TBD: Screenshot
 
-## `public` vs. `[SerializeField] private`
+#### `public` vs. `[SerializeField] private`
 
-This is just a random preference thing, but nice to comment on.
+When using `[System.Serializable]` there are two ways to mark a field for serialization: marking the field as `public` or annotating a private or protected field with `[SerializeField]`
 
 - Prefixing your fields with `public` allows programmatic access to modify this field, which may be undesirable for data consistency and encapsulation reasons
 - Prefixing with `[SerializeField] private` makes it so that this field can ONLY be set by the Unity editor.  This has an unfortunate side effect of causing warning spew on every build.
 
-## Referencing (deduplicating) data
+
+### Deduplicating Read-Only Data with ScriptableObject
 
 While `[System.Serializable]` is super useful in a lot of ways, it can be a nightmare to copy all these fields around.
 
-This is where `ScriptableObject` is super useful: You can put the shared readonly data on a ScriptableObject,
+This is where `ScriptableObject` is super useful: You can put any shared, readonly data on a `ScriptableObject`,
 and make all your mutable things refer to it.
 
 Consider the following:
@@ -83,27 +65,73 @@ public class ArmorBasis : ScriptableObject {
   ArmorEntry[] armor;
 }
 ```
+With this, you can create `.asset` files for all of your different Armors (e.g., Iron Armor, Cloth Cloak, etc) base stats.
+Your game state will maintain its `Inventory` as a collection of unique instances, each with theor own condition (from 0.0 - 1.0), and
+a reference to its base stats, `basis`.  With this approach, if you want to change an armor's stats, you only need to
+update the `.asset` file once place, and all your references get updated immediately.
 
-In this, your `Inventory` contains a collection of different `Armor`s, each with its own current condition (e.g., 0.0 - 1.0), and
-a reference to their base stats, `basis`.  With this approach, if you want to change an armor's stats, you only need to
-update its ScriptableObject `.asset` file in one place, and all your saves and characters get updated immediately.
-
-As I mentioned before, if you want your save state to directly reference a ScriptableObject, **consult [this doc](https://github.com/fmoo/Orange/tree/master/Assets/Scripts/Serialization)
+There are some gotchas here, so, **consult [this doc](https://github.com/fmoo/Orange/tree/master/Assets/Scripts/Serialization)
 for more details on the challenges here**.
 
-## What about using a ScriptableObject for the save itself already?
 
-Back to the beginning: `ScriptableObject` is **great** for deduplicating references to shared data.  We can take advantage of
-the editability of `[Serializable]` and they are trivially assignable on your components that need a reference to your
-global game state.  Here's the concrete example:
+### Managing Save State in Unity with ScriptableObject
+
+In general, it is *Good Practice* to separate your saveable "game state" from the components and game objects in your Unity scene graph.
+
+On the other hand, it is *A Pain In The Ass* to regenerate GameObjects and Components from data structures managed outside of the scene graph.
+
+ScriptableObject provides a middle ground as convenient way to centralize, deduplicate, and isolate your game state from your scene graph, and encourages patterns that minimize creation of extra GameObjects/Components for tracking data.
+
+TBD: MORE ON THIS BELOW
+
+
+## 2. Encoding and decoding the data
+
+### JsonUtility
+
+`JsonUtility` is [Unity's built-in JSON encoder](https://docs.unity3d.com/ScriptReference/JsonUtility.html).  JSON is an
+extremely common way of converting objects to strings, which you can easily save and load from users' devices.
+
+If your Game State references ScriptableObject instances for deduplication, you will have problems!  See ... for details, or consider using Odin's [open source serializer]().
+
+### OdinSerializer
+
+TBD
+
+## 3. Saving and restoring the encoded files
+
+### Using a ScriptableObject
+
+**You can't do this directly!**  While this works from inside the editor in play mode, modifications to ScriptableObject .asset files **are not persisted** when running a standalone builds of your application.  All your game progress will get lost every time you restart the app.
+
+To do this, you must include to sync the ScriptableObject to and from a file on disk, such as using the mechanism described below.
+
+Doing this with json might look something like this:
 ```
 TBD
 ```
 
-## Saving to Disk
+### Using the Filesystem
+A straightforward way to do this is:
+```
+var writer = new System.IO.StreamWriter(Application.persistentDataPath + "/saves.json");
+writer.Write(data);
+writer.Flush();
+writer.Close();
+```
 
-TBD
+Using `Applicaiton.persistentDataPath` is critical because it uses a permission-appropriate location, and adheres to
+OS-specific backup/restore policies.
 
-## Anti-tamper
+### Using [PlayerPrefs](https://docs.unity3d.com/ScriptReference/PlayerPrefs.html)?
+
+PlayerPrefs is a simple Key/Value store that lets you store strings in the Windows Registry.  While it is meant to be
+used for settings like language, volume, or input overrides, you can also jam your serialized JSON in here.
+
+You should write this as a file on disk instead.
+
+### Anti-tamper
 JSON files are trivially tamperable.  To make them more difficult to tamper with, either include a fixed length
 plaintext header with an HMAC signature of the save file.
+
+TBD: concrete examples
