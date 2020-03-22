@@ -14,6 +14,16 @@ In general this means:
 
 ## 1. Organizing Your Game Data
 
+In general, it is *Good Practice* to separate your "save state" from the components and game objects used to render Unity scene graph. Your saved state should consist of only what is needed to re-load the scene and rebuild the necessary game state to continue - e.g., while you typically need to remember your player's position, you typically do not need the current playback time of the current BGM, or the exact state of the particle system used to render a nearby fountain.
+
+Here are some general tips:
+
+- Try to avoid keeping or having copies of persistent state on Components or GameObjects in your scene.  Prefer to make your Components have *private references* to shared structures instead of public or serialized copies of their values.
+- If you do have copies of persistable state on your Components, you will need a bunch of code to regenerating or sync that state when you want to save or change scenes.
+- Use properties' getters in your component to dynamically retrieve values and avoid storing copies of things on your components
+- Use `System.Serializable` to define common structures that should be serialized or referenced by different things
+- Use `ScriptableObject` asset files for Components to share static/readonly data. 
+
 ### Using `[System.Serializable]` on Structures
 
 `[System.Serializable]` is an annotation you can put on a (**non-MonoBehaviour/ScriptableObject**) `public class` or `public struct`
@@ -41,12 +51,39 @@ When using `[System.Serializable]` there are two ways to mark a field for serial
 - Prefixing your fields with `public` allows programmatic access to modify this field, which may be undesirable for data consistency and encapsulation reasons
 - Prefixing with `[SerializeField] private` makes it so that this field can ONLY be set by the Unity editor.  This has an unfortunate side effect of causing warning spew on every build.
 
+#### Copying instead of Referencing
+
+Working with `Serializable` objects can sometimes lead to bugs when you are expecting to have a copy of an object, but you have accidentally *shared* a reference in code instead.  One way to copy a Serializable Object is by implementing a `Clone()` method:
+```
+public MyFoo Clone() {
+  MyFoo copy = this.MemberwiseCoone() as MyFoo;
+  // "deep copy" any lists or things. 
+  return copy;
+}
+```
+### Using List<T> and T[]  
+
+Unity's property editor supports typed collections ("generics").  These are a great way to keep track of lists of things.  When combined with `Serializable`, they can be a really powerful way of managing ordered collections of player data, such as inventories, party membership, and more.
+
+When implementing a `Clone()` method, be sure to reassign copies of your Serializable list items to avoid reference sharing.  `MemberwiseClone` is **not** a "deep" copy.
+```
+public MyFoo Clone() {
+  MyFoo copy = this.MemberwiseCoone() as MyFoo;
+  // "deep copy" any lists of other copyably Serializable objects. 
+  for (int ii = 0; ii < copy.list.Count; ii++) {
+    copy.list[ii] = copy.list[ii].Clone();
+  }
+  return copy;
+}
+```
 
 ### Deduplicating Read-Only Data with ScriptableObject
 
-While `[System.Serializable]` is super useful in a lot of ways, it can be a nightmare to copy all these fields around.
+While `[System.Serializable]` is super useful in a lot of ways, it can be a nightmare to copy all fields between objects.
 
-`ScriptableObject` can be a really useful tool: it provides a way to centralize, deduplicate, and isolate your game state from your scene graph, and encourages patterns that minimize creation of extra GameObjects/Components for tracking data.
+`ScriptableObject` is a powerful tool: it provides a way to centralize, deduplicate, and isolate your game state from your scene graph, and encourages patterns that minimize creation of extra GameObjects/Components for tracking data.
+
+If you are not familiar with ScriptableObject but are with `.prefab` files, a ScriptableObject is a way of making a file from a single 
 
 You can put any shared, readonly data on a `ScriptableObject`, and make all your mutable things refer to it.
 
@@ -74,6 +111,14 @@ update the `.asset` file once place, and all your references get updated immedia
 There are some gotchas here, so, **consult [this doc](https://github.com/fmoo/Orange/tree/master/Assets/Scripts/Serialization)
 for more details on the challenges here**.
 
+### Deep Copying `System.Serializable` Objects via Re-serialization
+
+Instead of doing a shallow clone, you can use a serializer like `JsonUtility` or `MemoryStream`+`BinaryFormatter` to take advantage of the serialization infra you signed up for to do a copy.  There are some nonobvious implications for ScriptableObject references like I described before, so I've avoided doing this so far.  Maybe it's fine.
+
+### Use a ScriptableObject as a big Global Variable for your Save State
+Normally, you define a ScriptableObject to make creation of similar data blobs that you can easily swap out.  
+
+TBD the rest of this.
 
 ## 2. Encoding and decoding the data
 
