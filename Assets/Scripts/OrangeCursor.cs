@@ -70,7 +70,10 @@ public class OrangeCursor : MonoBehaviour {
         var currentSelection = EventSystem.current.currentSelectedGameObject;
         if (currentSelection != lastSelection && currentSelection != null) {
             if (audioSource != null && audioBank != null) {
-                audioBank.PlayEffect(audioSource, selectionChangedSound);
+                if (currentSelection.GetComponent<OrangeSilentButton>() == null) {
+                    // Debug.Log($"<> Selection Change: {lastSelection} -> {currentSelection}");
+                    audioBank.PlayEffect(audioSource, selectionChangedSound);
+                }
                 // Autoscroll parent scroll rect containers so that the selection is visible.
                 // This logic probably doesn't work with nested scrollrects.  Don't nest scrollrects. 
                 var scroller = currentSelection.GetComponentInParent<ScrollRect>();
