@@ -22,6 +22,13 @@ public struct ScriptableObjectReference : ISerializationCallbackReceiver {
             }
         }
     }
+    public static T GetFromGUID<T>(string guid) where T : SerializableScriptableObject {
+        InitScriptableObjectCache();
+        if (scriptableObjectCache.TryGetValue(guid, out SerializableScriptableObject value)) {
+            return value as T;
+        }
+        return null;
+    }
 
     public void OnAfterDeserialize() {
         if (scriptableObjectCache == null) {
