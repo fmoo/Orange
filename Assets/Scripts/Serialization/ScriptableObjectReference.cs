@@ -14,8 +14,11 @@ public struct ScriptableObjectReference : ISerializationCallbackReceiver {
 
     static Dictionary<string, SerializableScriptableObject> scriptableObjectCache;
     public static void InitScriptableObjectCache() {
+        if (scriptableObjectCache != null) return;
+        // This might throw, so load before initializing the dictionary reference.
+        var resources = Resources.LoadAll<SerializableScriptableObject>("");
         scriptableObjectCache = new Dictionary<string, SerializableScriptableObject>();
-        foreach (var resource in Resources.LoadAll<SerializableScriptableObject>("")) {
+        foreach (var resource in resources) {
             Debug.Log($"Got Resource {resource.name} with guid {resource.guid}");
             if (resource.guid != "") {
                 scriptableObjectCache[resource.guid] = resource;
@@ -30,10 +33,19 @@ public struct ScriptableObjectReference : ISerializationCallbackReceiver {
         return null;
     }
 
+    public static bool loggedDeserializeError = false;
+
     public void OnAfterDeserialize() {
         if (scriptableObjectCache == null) {
-            // Debug.LogWarning("Attempt to deserialize using null GUID cache!");
-            return;
+            try {
+                InitScriptableObjectCache();
+            } catch (UnityException e) {
+                if (!loggedDeserializeError) {
+                    Debug.LogWarning(e);
+                    loggedDeserializeError = true;
+                }
+                return;
+            }
         }
         if (scriptableObjectCache.TryGetValue(guid, out SerializableScriptableObject value)) {
             if (value != null) {
