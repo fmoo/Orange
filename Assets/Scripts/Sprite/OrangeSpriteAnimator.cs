@@ -9,13 +9,17 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     public SpriteRenderer spriteRenderer;
     public UnityEngine.UI.Image image;
     public bool destroyOnDone = true;
+    public System.Action onAnimationDone;
 
     private OrangeSpriteManagerAnimation animator;
     private float timeElapsed = 0f;
 
     public void SetAnimation(string animationName) {
+        enabled = true;
         animator = sprites.GetAnimation(animationName);
         if (animationName == this.animationName) return;
+        onAnimationDone?.Invoke();
+        onAnimationDone = null;
         timeElapsed = 0f;
         this.animationName = animationName;
         if (animator == null)
@@ -67,12 +71,18 @@ public class OrangeSpriteAnimator : MonoBehaviour {
                 sprite.SetUIImageSprite(image);
         }
 
-        if (sprite == null && destroyOnDone) {
-            if (animator.loop == true) {
-                Debug.LogError("Null sprite returned for looping animation!");
-                return;
+        if (sprite == null) {
+            if (animator.loop == false) {
+                onAnimationDone?.Invoke();
+                onAnimationDone = null;
             }
-            Destroy(gameObject);
+            if (destroyOnDone) {
+                if (animator.loop == true) {
+                    Debug.LogError("Null sprite returned for looping animation!");
+                    return;
+                }
+                Destroy(gameObject);
+            }
         }
     }
 
