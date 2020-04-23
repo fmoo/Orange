@@ -63,6 +63,8 @@ public class OrangeSpriteDB : ScriptableObject {
     public string importAnimName;
     [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
     public bool renameImportedSprites = true;
+    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    public bool flipImportedSprites = false;
     [NaughtyAttributes.Button("Import Sprites")]
     public void DoImportSprites() {
         int ii = 0;
@@ -73,6 +75,7 @@ public class OrangeSpriteDB : ScriptableObject {
             sprites.Add(new OrangeSpriteManagerSprite() {
                 sprite = sprite,
                 name = name,
+                flip = flipImportedSprites,
             });
             ii += 1;
         }
@@ -86,5 +89,6 @@ public class OrangeSpriteDB : ScriptableObject {
         importSprites = new Sprite[0];
         importAnimName = "";
         renameImportedSprites = true;
+        flipImportedSprites = false;
     }
 }
