@@ -9,6 +9,14 @@ public class OrangeCameraFollow : MonoBehaviour {
     /// <summary>If set, don't let the camera travel outside these bounds</summary>
     public Bounds? cameraBounds = null;
 
+    public FollowMode followMode = FollowMode.LAG;
+
+    public enum FollowMode {
+        LAG,
+        SNAP,
+        SNAP_X_ONLY,
+    }
+
     Bounds GetTargetBounds() {
         if (targetSprite != null) {
             return targetSprite.bounds;
@@ -20,13 +28,19 @@ public class OrangeCameraFollow : MonoBehaviour {
     }
 
     void LateUpdate() {
-        DoUpdateNaive();
+        if (followMode == FollowMode.LAG) {
+            DoUpdateLag();
+        } else if (followMode == FollowMode.SNAP) {
+            DoUpdateNaive();
+        } else if (followMode == FollowMode.SNAP_X_ONLY) {
+            DoUpdateNaiveX();
+        }
     }
 
     public float noScrollRatio = 0.7f;
     public float cameraSpeed = 2f;
     private bool doneMoving = true;
-    void DoUpdateNaive() {
+    void DoUpdateLag() {
         // This approach kind of sucks. Ideally we'd have some sort of
         // bounding rectangle and if the player moves outside of it, we move
         // to follow.
@@ -61,6 +75,25 @@ public class OrangeCameraFollow : MonoBehaviour {
         doneMoving = (newPosition - cameraTransform.position).magnitude < 0.001f;
         cameraTransform.position = newPosition;
         // t.position = new Vector3(v.x, v.y, t.position.z);
+    }
+
+    public void DoUpdateNaive() {
+        Camera c = (affectCamera ?? Camera.current);
+        Vector3 v = GetTargetBounds().center;
+        c.transform.position = new Vector3(
+            v.x,
+            v.y,
+            c.transform.position.z
+        );
+    }
+    public void DoUpdateNaiveX() {
+        Camera c = (affectCamera ?? Camera.current);
+        Vector3 v = GetTargetBounds().center;
+        c.transform.position = new Vector3(
+            v.x,
+            c.transform.position.y,
+            c.transform.position.z
+        );
     }
 
     public IEnumerator WaitForMovementDone() {
