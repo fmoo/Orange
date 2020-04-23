@@ -1,5 +1,10 @@
 ﻿using UnityEngine;
 
+public enum Directions2 {
+    LEFT,
+    RIGHT,
+}
+
 public enum Directions4 {
     UP,
     DOWN,
@@ -19,6 +24,35 @@ public enum Directions8 {
 }
 
 public static class DirectionsUtils {
+    public static float ToFloat(this Directions2 d) {
+        switch (d) {
+            case Directions2.LEFT:
+                return -1f;
+            case Directions2.RIGHT:
+                return 1f;
+        }
+        return 0f;
+    }
+    public static int ToInt(this Directions2 d) {
+        switch (d) {
+            case Directions2.LEFT:
+                return -1;
+            case Directions2.RIGHT:
+                return 1;
+        }
+        return 0;
+    }
+
+    public static string ToString(this Directions2 d) {
+        switch (d) {
+            case Directions2.LEFT:
+                return "left";
+            case Directions2.RIGHT:
+                return "right";
+        }
+        return "";
+    }
+
     public static Vector2 ToVector2(Directions4 d) {
         switch (d) {
             case Directions4.UP:
