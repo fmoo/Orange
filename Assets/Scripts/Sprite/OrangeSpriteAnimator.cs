@@ -13,6 +13,11 @@ public class OrangeSpriteAnimator : MonoBehaviour {
 
     private OrangeSpriteManagerAnimation animator;
     private float timeElapsed = 0f;
+    private float stallTime = 0f;
+
+    public void AddStallTime(float addTime) {
+        stallTime += addTime;
+    }
 
     public void SetAnimation(string animationName) {
         enabled = true;
@@ -21,6 +26,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         onAnimationDone?.Invoke();
         onAnimationDone = null;
         timeElapsed = 0f;
+        stallTime = 0f;
         this.animationName = animationName;
         if (animator == null)
             Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}");
@@ -60,7 +66,17 @@ public class OrangeSpriteAnimator : MonoBehaviour {
                 Debug.LogError($"Animator is not set for {animationName} on {name}");
             }
         }
-        timeElapsed += Time.deltaTime;
+        float remainingTime = Time.deltaTime;
+        if (stallTime > 0f) {
+            if (stallTime > remainingTime) {
+                stallTime -= remainingTime;
+                remainingTime = 0f;
+            } else {
+                remainingTime -= stallTime;
+                stallTime = 0f;
+            }
+        }
+        timeElapsed += remainingTime;
         var sprite = animator.GetSpriteForTime(timeElapsed);
 
         if (sprite != null) {
