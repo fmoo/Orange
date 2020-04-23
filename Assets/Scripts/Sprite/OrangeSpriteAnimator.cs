@@ -32,6 +32,15 @@ public class OrangeSpriteAnimator : MonoBehaviour {
             Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}");
     }
 
+    public void StopAnimation(string spriteName) {
+        var sprite = sprites.GetSprite(spriteName);
+        if (spriteRenderer != null) sprite.SetRendererSprite(spriteRenderer);
+        if (image != null) sprite.SetUIImageSprite(image);
+        enabled = false;
+        animationName = "";
+        stallTime = 0f;
+    }
+
     void Start() {
         SetAnimation(animationName);
     }
