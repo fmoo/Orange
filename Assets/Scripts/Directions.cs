@@ -53,7 +53,7 @@ public static class DirectionsUtils {
         return "";
     }
 
-    public static Vector2 ToVector2(Directions4 d) {
+    public static Vector2 ToVector2(this Directions4 d) {
         switch (d) {
             case Directions4.UP:
                 return Vector2.up;
@@ -67,7 +67,7 @@ public static class DirectionsUtils {
         return Vector2.zero;
     }
 
-    public static Vector2 ToVector2Int(Directions4 d) {
+    public static Vector2 ToVector2Int(this Directions4 d) {
         switch (d) {
             case Directions4.UP:
                 return Vector2Int.up;
@@ -82,7 +82,7 @@ public static class DirectionsUtils {
     }
 
     // TODO: Should we normalize up + left to have a magnitude of 1?
-    public static Vector2 ToVector2(Directions8 d) {
+    public static Vector2 ToVector2(this Directions8 d) {
         switch (d) {
             case Directions8.UP:
                 return Vector2.up;
