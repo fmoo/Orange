@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Obsolete("Use OrangeSpriteManager instead.")]
+[System.Obsolete("Use OrangeSpriteDB instead.")]
 public class NamedSpriteAnimation : MonoBehaviour {
     public string animationName;
     public List<Sprite> frames = new List<Sprite>();
