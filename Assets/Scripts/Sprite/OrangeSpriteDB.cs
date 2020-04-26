@@ -5,7 +5,9 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "SpritesDB", menuName = "Data/Sprite DB", order = 3)]
 public class OrangeSpriteDB : ScriptableObject {
+    [NaughtyAttributes.ReorderableList]
     public List<OrangeSpriteManagerSprite> sprites = new List<OrangeSpriteManagerSprite>();
+    [NaughtyAttributes.ReorderableList]
     public List<OrangeSpriteManagerAnimation> animations = new List<OrangeSpriteManagerAnimation>();
     private Dictionary<string, OrangeSpriteManagerSprite> namedSprites =
         new Dictionary<string, OrangeSpriteManagerSprite>();
