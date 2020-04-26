@@ -1,0 +1,1 @@
+@charsheettool.exe makestrip --suffix strip --direction-order RULD --frame-order 1012 %*
