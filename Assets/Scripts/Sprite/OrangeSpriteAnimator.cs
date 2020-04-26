@@ -34,8 +34,12 @@ public class OrangeSpriteAnimator : MonoBehaviour {
 
     public void StopAnimation(string spriteName) {
         var sprite = sprites.GetSprite(spriteName);
-        if (spriteRenderer != null) sprite.SetRendererSprite(spriteRenderer);
-        if (image != null) sprite.SetUIImageSprite(image);
+        if (sprite == null) {
+            Debug.LogError($"No sprite for {spriteName}!");
+        } else {
+            if (spriteRenderer != null) sprite.SetRendererSprite(spriteRenderer);
+            if (image != null) sprite.SetUIImageSprite(image);
+        }
         enabled = false;
         animationName = "";
         stallTime = 0f;
@@ -120,5 +124,6 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         var timeToSleep = animator.duration - timeElapsed;
         if (timeToSleep <= 0f) yield break;
         yield return new WaitForSeconds(timeToSleep);
+        // TODO: Handle stalls!!
     }
 }
