@@ -1,0 +1,5 @@
+spritepack-tools.zip
+spritepack-tools/
+tmp/
+.mypy_cache/
+__pycache__

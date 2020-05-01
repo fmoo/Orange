@@ -1,0 +1,1 @@
+@spritepackutil.exe split --cols 4 --rows 2 --subcols 3 --subrows 4 %*

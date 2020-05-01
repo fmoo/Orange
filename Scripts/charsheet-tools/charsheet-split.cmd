@@ -1,1 +1,0 @@
-@charsheettool.exe split %*
