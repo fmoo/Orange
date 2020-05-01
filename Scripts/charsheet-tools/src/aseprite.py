@@ -1,5 +1,35 @@
+from enum import IntEnum, IntFlag
 from io import BytesIO
 import struct
+
+## https://github.com/aseprite/aseprite/blob/master/docs/ase-file-specs.md
+
+
+class ChunkType(IntEnum):
+    # Ignore this chunk if you find the new palette chunk (0x2019) Aseprite v1.1 saves both chunks 0x0004 and 0x2019 just for backward compatibility.
+    OldPaletteChunk = 0x0004
+    # Ignore this chunk if you find the new palette chunk (0x2019)
+    OldPaletteChunk2 = 0x0011
+    # In the first frame should be a set of layer chunks to determine the entire layers layout:
+    LayerChunk = 0x2004
+    # This chunk determine where to put a cel in the specified layer/frame.
+    CelChunk = 0x2005
+    # Adds extra information to the latest read cel.
+    CelExtraChunk = 0x2006
+    # Color profile for RGB or grayscale values.
+    ColorProfileChunk = 0x2007
+    # DEPRECATED
+    MaskChunk_DEPRECATED = 0x2016
+    # Never used.
+    PathChunk_UNUSED = 0x2017
+    # No Information
+    TagsChunk = 0x2018
+    # No Information
+    PaletteChunk = 0x2019
+    # Insert this user data in the last read chunk. E.g. If we've read a layer, this user data belongs to that layer, if we've read a cel, it belongs to that cel, etc.
+    UserDataChunk = 0x2020
+    # No Information
+    SliceChunk = 0x2022
 
 
 class AsepriteIO(BytesIO):
@@ -36,8 +66,8 @@ class AsepriteIO(BytesIO):
 
     def readfixed(self):
         dat = self.read(4)
-        (val,) = struct.unpack("<f", dat)  # probably not correct
-        return val
+        (num, den) = struct.unpack("<hh", dat)  # probably not correct
+        return (num, den)
 
     def readbytearr(self, n):
         return self.read(n)
@@ -48,7 +78,7 @@ class AsepriteIO(BytesIO):
         return strdata.decode("utf-8")
 
     def readpixel(self):
-        return self.readbytearr(self.PIXELSIZE)
+        return tuple(self.readbytearr(self.PIXELSIZE))
 
     def readheader(self):
         data = self
@@ -122,11 +152,11 @@ class AsepriteIO(BytesIO):
         BYTE[]      Chunk data
         """
         chunksize = self.readdword()
-        chunktype = self.readword()
+        chunktype = ChunkType(self.readword())
         chunkdata = self.readbytearr(chunksize - 6)
         return {
             "type": chunktype,
-            "data": chunkdata,
+            "data": _ParseChunk(chunktype, chunkdata, self.PIXELSIZE),
         }
 
 
@@ -134,12 +164,8 @@ import warnings
 import zlib
 
 
-def ParseChunk(chunk: dict, pixelsize: int):
-    if chunk["type"] not in {item.value for item in ChunkType}:
-        warnings.warn(f"Unknown chunk type: 0x{'%x'%chunk['type']}")
-        return None
-    chunkType = ChunkType(chunk["type"])
-    data = AsepriteIO(chunk["data"]).set_pixelsize(pixelsize)
+def _ParseChunk(chunkType: ChunkType, chunkBytes: bytes, pixelsize: int):
+    data = AsepriteIO(chunkBytes).set_pixelsize(pixelsize)
 
     if chunkType == ChunkType.CelChunk:
         """
@@ -203,36 +229,195 @@ def ParseChunk(chunk: dict, pixelsize: int):
                     row.append(pixel)
 
         return result
+
+    elif chunkType == ChunkType.LayerChunk:
+        result = {}
+        result["flags"] = Layer.Flag(data.readword())
+        result["type"] = Layer.Type(data.readword())
+        result["childLevel"] = data.readword()
+        _defaultLayerWidth = data.readword()
+        _defaultLayerHeight = data.readword()
+        result["blendMode"] = Layer.BlendMode(data.readword())
+        # only valid if file header flags field has bit 1 set?
+        result["opacity"] = data.readbyte()
+        _ = data.readbytearr(3)
+        result["name"] = data.readstr()
+        return result
+
+    elif chunkType in [ChunkType.OldPaletteChunk, ChunkType.OldPaletteChunk2]:
+        result = {"colors": []}
+        numPackets = data.readword()
+        result["numpackets"] = numPackets
+        for _ii in range(numPackets):
+            entryOffset = data.readbyte()
+            while entryOffset > 0:
+                result["colors"].append((0, 0, 0))
+                entryOffset -= 1
+            numColors = data.readbyte()
+            numColors = 256 if numColors == 0 else numColors
+            for _jj in range(numColors):
+                r = data.readbyte()
+                g = data.readbyte()
+                b = data.readbyte()
+                result["colors"].append((r, g, b))
+        return result
+
+    elif chunkType == ChunkType.ColorProfileChunk:
+        result = {}
+        result["type"] = ColorProfile.Type(data.readword())
+        result["flags"] = ColorProfile.Flags(data.readword())
+        result["gamma"] = data.readfixed()
+        _ = data.readbytearr(8)
+        if result["type"] == ColorProfile.Type.Embedded:
+            icclen = data.readdword()
+            result["icc_profile"] = data.readbytearr(icclen)
+        return result
+
+    elif chunkType == ChunkType.PaletteChunk:
+        # DWORD       New palette size (total number of entries)
+        # DWORD       First color index to change
+        # DWORD       Last color index to change
+        # BYTE[8]     For future (set to zero)
+        # + For each palette entry in [from,to] range (to-from+1 entries)
+        # WORD      Entry flags:
+        #             1 = Has name
+        # BYTE      Red (0-255)
+        # BYTE      Green (0-255)
+        # BYTE      Blue (0-255)
+        # BYTE      Alpha (0-255)
+        # + If has name bit in entry flags
+        #     STRING  Color name
+        result = {"colors": {}}
+        numEntries = data.readdword()
+        indexfirst = data.readdword()
+        indexlast = data.readdword()
+        assert numEntries == indexlast - indexfirst + 1
+        _ = data.read(8)
+        for nn in range(indexfirst, indexlast + 1):
+            flags = Palette.Flags(data.readword())
+            r = data.readbyte()
+            g = data.readbyte()
+            b = data.readbyte()
+            a = data.readbyte()
+            color = {"value": (r, g, b, a)}
+            if Palette.Flags.HasColorName in flags:
+                color["name"] = data.readstr()
+            result["colors"][nn] = color
+
+        return result
+
     else:
-        warnings.warn(f"Chunk type {chunkType} not yet supported")
+        warnings.warn(f"Chunk type 0x{'%x'%chunkType} not yet supported")
         return None
 
 
-from enum import Enum
+class Palette:
+    class Flags(IntFlag):
+        HasColorName = 1
 
 
-class ChunkType(Enum):
-    # Ignore this chunk if you find the new palette chunk (0x2019) Aseprite v1.1 saves both chunks 0x0004 and 0x2019 just for backward compatibility.
-    OldPaletteChunk = 0x0004
-    # Ignore this chunk if you find the new palette chunk (0x2019)
-    OldPaletteChunk2 = 0x0011
-    # In the first frame should be a set of layer chunks to determine the entire layers layout:
-    LayerChunk = 0x2004
-    # This chunk determine where to put a cel in the specified layer/frame.
-    CelChunk = 0x2005
-    # Adds extra information to the latest read cel.
-    CelExtraChunk = 0x2006
-    # Color profile for RGB or grayscale values.
-    ColorProfileChunk = 0x2007
-    # DEPRECATED
-    MaskChunk_DEPRECATED = 0x2016
-    # Never used.
-    PathChunk_UNUSED = 0x2017
-    # No Information
-    TagsChunk = 0x2018
-    # No Information
-    PaletteChunk = 0x2019
-    # Insert this user data in the last read chunk. E.g. If we've read a layer, this user data belongs to that layer, if we've read a cel, it belongs to that cel, etc.
-    UserDataChunk = 0x2020
-    # No Information
-    SliceChunk = 0x2022
+class ColorProfile:
+    class Type(IntEnum):
+        NoProfile = 0
+        SRGB = 1
+        Embedded = 2
+
+    class Flags(IntFlag):
+        UseSpecialFixedGamma = 1
+
+
+class Layer:
+    class Type(IntEnum):
+        ImageLayer = 0
+        LayerGroup = 1
+
+    class Flag(IntFlag):
+        Visible = 1
+        Editable = 2
+        LockMovement = 4
+        Background = 8
+        PreferLinkedCels = 16
+        LayerGroupCollapsed = 32
+        ReferenceLayer = 64
+
+    class BlendMode(IntEnum):
+        Normal = 0
+        Multiply = 1
+        Screen = 2
+        Overlay = 3
+        Darken = 4
+        Lighten = 5
+        ColorDodge = 6
+        ColorBurn = 7
+        HardLight = 8
+        SoftLight = 9
+        Difference = 10
+        Exclusion = 11
+        Hue = 12
+        Saturation = 13
+        Color = 14
+        Luminosity = 15
+        Addition = 16
+        Subtract = 17
+        Divide = 18
+
+
+import pprint
+from pathlib import Path
+
+
+def dump_file(input_filename):
+    inp = Path(input_filename)
+    data = AsepriteIO(inp.read_bytes())
+    print(f"## {inp} ##")
+    print("\nHeader:")
+    header = data.readheader()
+    pprint.pprint(header)
+    for ii in range(header["numframes"]):
+        frameheader = data.readframeheader()
+        print(f"\nFrame #{ii+1}:")
+        pprint.pprint(frameheader)
+        # numbytes = frameheader["framebytes"]
+
+        for jj in range(frameheader["numchunks"]):
+            chunk = data.readchunk()
+            chunktype = ChunkType(chunk["type"]).name
+            print(f"Chunk #{ii+1}.{jj+1} ({chunktype})")
+            pprint.pprint(chunk)
+            # pprint.pprint(chunk)
+        # _framedata = data.readbytearr(numbytes)
+
+
+from PIL import Image
+import PIL
+
+
+def extract_images(input_filename):
+    inp = Path(input_filename)
+    data = AsepriteIO(inp.read_bytes())
+    header = data.readheader()
+
+    layers = []
+    for framenumber in range(header["numframes"]):
+        frameheader = data.readframeheader()
+        for _jj in range(frameheader["numchunks"]):
+            chunk = data.readchunk()
+
+            if chunk["type"] == ChunkType.LayerChunk:
+                layers.append(chunk["data"])
+            if chunk["type"] == ChunkType.CelChunk:
+                cel = chunk["data"]
+                image = Image.new("RGBA", header["size"])
+                for yy, row in enumerate(cel["pixels"]):
+                    for xx, vv in enumerate(row):
+                        # print(f"image.putpixel(({xx}, {yy}), {vv})")
+                        image.putpixel((xx + cel["xPos"], yy + cel["yPos"]), vv)
+                outpath = inp.with_name(
+                    f"{inp.stem}-{layers[cel['layerIndex']]['name']}-{framenumber}.png"
+                )
+                print(f"Writing {outpath}...")
+                image.save(outpath)
+
+    pprint.pprint(layers)
+    # pprint.pprint(chunk)
+    # _framedata = data.readbytearr(numbytes)

@@ -1,9 +1,11 @@
 from argparse import ArgumentParser
+from aseprite import extract_images, dump_file
 from pathlib import Path
 import PIL
 import sys
+
 from PIL import Image
-from typing import Any
+from typing import Any, List, Tuple
 
 
 def cmd_split(ns: Any) -> int:
@@ -33,6 +35,76 @@ def cmd_split(ns: Any) -> int:
     return 0
 
 
+def common_prefix(names: List[str]) -> str:
+    prefix = ""
+    if len(names) == 0:
+        return prefix
+    elif len(names) == 1:
+        return names[0]
+
+    done = False
+    for ii, wantletter in enumerate(names[0]):
+        for other in names[1:]:
+            if ii >= len(other):
+                done = True
+                break
+            if wantletter != other[ii]:
+                done = True
+                break
+        if not done:
+            prefix += wantletter
+
+    return prefix
+
+
+def cmd_join(ns: Any) -> int:
+    input_filenames = ns.input_filename
+    if ns.sort:
+        print("Using sorted input file list...")
+        input_filenames.sort()
+    nchunk = 0
+    for ii in range(0, len(input_filenames), 8):
+        root = Path(input_filenames[0]).parent
+        chunk_names = input_filenames[ii : ii + 8]
+        prefix = common_prefix([Path(fn).name for fn in chunk_names])
+        chunk_images = [Image.open(filename) for filename in chunk_names]
+        cursize = None
+        for image in chunk_images:
+            if cursize is None:
+                cursize = image.size
+            elif cursize != image.size:
+                print(
+                    f"Error: All images must have the same size.  Saw both {cursize} and {image.size}"
+                )
+                filelist = "\n - ".join(input_filenames[ii : ii + 8])
+                print(f"with files: \n - {filelist}")
+                return 1
+        if cursize is None:
+            raise Exception()
+
+        outimage = join_images(chunk_images, cursize)
+        if prefix == "":
+            name = f"joined{nchunk}"
+        else:
+            name = f"{prefix}-joined{nchunk}.png"
+        print(f"prefix = {prefix}")
+        print(f"Writing {name}...")
+        outimage.save(root / name)
+
+        nchunk += 1
+    return 0
+
+
+def join_images(images: List[Image.Image], cellsize: Tuple[int, int]) -> Image:
+    cw, ch = cellsize
+    imw, imh = cw * 3, ch * 2
+    output_image = Image.new("RGBA", (imw, imh))
+    for nn, image in enumerate(images):
+        row, col = divmod(nn, 3)
+        output_image.paste(image, (col * cw, row * ch))
+    return output_image
+
+
 def cmd_makestrip(ns: Any) -> int:
     for fn in ns.input_filename:
         inp = Path(fn)
@@ -41,6 +113,18 @@ def cmd_makestrip(ns: Any) -> int:
         outp = inp.with_name(f"{inp.stem}-{ns.suffix}.png")
         print(f"Writing {outp}...")
         outim.save(outp)
+    return 0
+
+
+def cmd_aseprite_extract(ns: Any) -> int:
+    for fn in ns.input_filename:
+        extract_images(fn)
+    return 0
+
+
+def cmd_aseprite_info(ns: Any) -> int:
+    for fn in ns.input_filename:
+        dump_file(fn)
     return 0
 
 
@@ -79,12 +163,25 @@ def main():
     cmd.add_argument("input_filename", nargs="+")
     cmd.set_defaults(cmd=cmd_split)
 
+    cmd = sp.add_parser("join")
+    cmd.add_argument("input_filename", nargs="+")
+    cmd.add_argument("--sort", type=bool, default=True)
+    cmd.set_defaults(cmd=cmd_join)
+
     cmd = sp.add_parser("makestrip")
     cmd.add_argument("--direction-order", default="RULD")
     cmd.add_argument("--frame-order", default="1012")
     cmd.add_argument("--suffix", default="strip")
     cmd.add_argument("input_filename", nargs="+")
     cmd.set_defaults(cmd=cmd_makestrip)
+
+    cmd = sp.add_parser("aseprite-extract")
+    cmd.add_argument("input_filename", nargs="+")
+    cmd.set_defaults(cmd=cmd_aseprite_extract)
+
+    cmd = sp.add_parser("aseprite-info")
+    cmd.add_argument("input_filename", nargs="+")
+    cmd.set_defaults(cmd=cmd_aseprite_info)
 
     ns = ap.parse_args()
     return ns.cmd(ns)

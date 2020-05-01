@@ -1,0 +1,1 @@
+@charsheettool.exe aseprite-extract %*
