@@ -40,7 +40,7 @@ public class SimpleBillboard : MonoBehaviour
         else if (billboardMethod == BillboardMethod.INVERT_CAMERA)
         {
             transform.rotation = camera.transform.rotation;
-            transform.Rotate(Vector3.up, 180f);
+            // transform.Rotate(Vector3.up, 180f);
         }
     }
 }
