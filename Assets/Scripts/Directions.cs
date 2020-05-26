@@ -67,7 +67,7 @@ public static class DirectionsUtils {
         return Vector2.zero;
     }
 
-    public static Vector2 ToVector2Int(this Directions4 d) {
+    public static Vector2Int ToVector2Int(this Directions4 d) {
         switch (d) {
             case Directions4.UP:
                 return Vector2Int.up;
