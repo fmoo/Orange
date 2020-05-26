@@ -76,7 +76,7 @@ public static class DirectionsUtils {
             case Directions4.RIGHT:
                 return Vector2Int.right;
             case Directions4.DOWN:
-                return Vector2Int.right;
+                return Vector2Int.down;
         }
         return Vector2Int.zero;
     }
