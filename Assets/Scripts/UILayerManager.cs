@@ -116,6 +116,12 @@ public class UILayerManager : MonoBehaviour {
         }
     }
 
+    public int navStackDepth {
+        get {
+            return navigationStack.Count;
+        }
+    }
+
     private Stack<UILayerPushContext> navigationStack = new Stack<UILayerPushContext>();
     private class UILayerPushContext {
         public List<UILayer> visibleLayers = new List<UILayer>();
