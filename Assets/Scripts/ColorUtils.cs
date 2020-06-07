@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 
 public static class ColorUtils {
-	public static Color WithAlpha(Color source, float a) {
+	public static Color WithAlpha(this Color source, float a) {
 		return new Color(source.r, source.g, source.b, a);
 	}
 
