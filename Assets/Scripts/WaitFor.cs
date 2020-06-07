@@ -42,4 +42,11 @@ public static class WaitFor {
             yield return null;
         }
     }
+
+    public static IEnumerator GameObjectMove(GameObject obj, Vector3 targetPosition, float duration) {
+        Vector3 startPosition = obj.transform.position;
+        yield return WaitFor.TimeRatio(duration, (tt) => {
+            obj.transform.position = Vector3.Lerp(startPosition, targetPosition, tt);
+        });
+    }
 }
