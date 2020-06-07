@@ -46,6 +46,10 @@ public class UILayerManager : MonoBehaviour {
         return WithSound("selectionChanged", action);
     }
     public void PlaySFX(string clipName) {
+        if (soundBank == null) {
+            Debug.LogError($"soundBank is null on UILayerManager", this);
+            return;
+        }
         soundBank.PlayEffect(audioSource, clipName);
     }
     private System.Action WithSound(string clipName, System.Action action) {

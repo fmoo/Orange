@@ -71,14 +71,18 @@ public class OrangeCanvasHelper : MonoBehaviour {
         // }
         // TODO: if the cursor was *not* visible, jump the cursor *immediately* to the currentSelectedGameObject
         // var wasActive = uiCursor.gameObject.activeSelf;
-        uiCursor.gameObject.SetActive(true);
+        if (uiCursor != null) {
+            uiCursor.gameObject.SetActive(true);
+        }
         // DoFocusIfNone();
         // if (!wasActive) {
         //     uiCursor.SnapToTarget(currentSelectable);
         // }
     }
     public void HideCursor() {
-        uiCursor.gameObject.SetActive(false);
+        if (uiCursor != null) {
+            uiCursor.gameObject.SetActive(false);
+        }
         EventSystem.current.SetSelectedGameObject(null);
     }
 
