@@ -2,8 +2,7 @@
 using System.Collections;
 
 public class OrangeCameraFollow : MonoBehaviour {
-    public Collider2D targetCollider;
-    public SpriteRenderer targetSprite;
+    public GameObject target;
     public Camera affectCamera;
 
     /// <summary>If set, don't let the camera travel outside these bounds</summary>
@@ -15,16 +14,6 @@ public class OrangeCameraFollow : MonoBehaviour {
         LAG,
         SNAP,
         SNAP_X_ONLY,
-    }
-
-    Bounds GetTargetBounds() {
-        if (targetSprite != null) {
-            return targetSprite.bounds;
-        } else if (targetCollider != null) {
-            return targetCollider.bounds;
-        } else {
-            return affectCamera.OrthographicBounds();
-        }
     }
 
     void LateUpdate() {
@@ -46,7 +35,7 @@ public class OrangeCameraFollow : MonoBehaviour {
         // to follow.
         Camera c = (affectCamera ?? Camera.current);
         Transform cameraTransform = c.transform;
-        Vector3 v = GetTargetBounds().center;
+        Vector3 v = target.transform.position;
 
         var innerBounds = c.OrthographicBounds();
         Vector3 cp;
@@ -79,7 +68,7 @@ public class OrangeCameraFollow : MonoBehaviour {
 
     public void DoUpdateNaive() {
         Camera c = (affectCamera ?? Camera.current);
-        Vector3 v = GetTargetBounds().center;
+        Vector3 v = target.transform.position;
         c.transform.position = new Vector3(
             v.x,
             v.y,
@@ -88,7 +77,7 @@ public class OrangeCameraFollow : MonoBehaviour {
     }
     public void DoUpdateNaiveX() {
         Camera c = (affectCamera ?? Camera.current);
-        Vector3 v = GetTargetBounds().center;
+        Vector3 v = target.transform.position;
         c.transform.position = new Vector3(
             v.x,
             c.transform.position.y,
