@@ -9,6 +9,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     public SpriteRenderer spriteRenderer;
     public UnityEngine.UI.Image image;
     public bool destroyOnDone = true;
+    public float playbackSpeed = 1f;
     public System.Action onAnimationDone;
 
     private OrangeSpriteManagerAnimation animator;
@@ -79,7 +80,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
                 Debug.LogError($"Animator is not set for {animationName} on {name}");
             }
         }
-        float remainingTime = Time.deltaTime;
+        float remainingTime = Time.deltaTime * playbackSpeed;
         if (stallTime > 0f) {
             if (stallTime > remainingTime) {
                 stallTime -= remainingTime;
@@ -107,7 +108,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
             }
             if (destroyOnDone) {
                 if (animator.loop == true) {
-                    Debug.LogError("Null sprite returned for looping animation!");
+                    Debug.LogError($"Null sprite returned for looping animation! {this}");
                     return;
                 }
                 Destroy(gameObject);
