@@ -14,6 +14,10 @@ public sealed class InputAxis : InputBase {
     public static InputAxis HORIZONTAL = new InputAxis("Horizontal");
     public static InputAxis VERTICAL = new InputAxis("Vertical");
 
+    public static Vector2Int GetVector2Int() {
+        return new Vector2Int(Sign(InputAxis.HORIZONTAL.Raw), Sign(InputAxis.VERTICAL.Raw));
+    }
+
     public static Vector2 GetVector2() {
         return new Vector2(InputAxis.HORIZONTAL.Smoothed, InputAxis.VERTICAL.Smoothed);
     }
@@ -28,6 +32,16 @@ public sealed class InputAxis : InputBase {
     }
     public float Raw {
         get { return Input.GetAxisRaw(Name); }
+    }
+
+    private static int Sign(float f) {
+        if (f > 0f) {
+            return 1;
+        } else if (f < 0f) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 }
 
