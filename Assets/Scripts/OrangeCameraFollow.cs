@@ -75,6 +75,9 @@ public class OrangeCameraFollow : MonoBehaviour {
             v.y,
             c.transform.position.z
         );
+        if (cameraBounds is Bounds nnCameraBounds) {
+            c.transform.position = GetClampedPosition(c.transform.position, nnCameraBounds);
+        }
     }
     public void DoUpdateNaiveX() {
         if (target == null) return;
@@ -96,4 +99,24 @@ public class OrangeCameraFollow : MonoBehaviour {
         }
         noScrollRatio = oldScrollRatio;
     }
+
+    Vector3 GetClampedPosition(Vector3 wantPosition, Bounds mapBounds) {
+        Bounds cameraBounds = affectCamera.OrthographicBounds();
+
+        Bounds cameraMoveBounds = new Bounds( //Define the camera's total safe zone for a given map boundary, as defined by mapBounds.
+            mapBounds.center,
+            new Vector3(
+                mapBounds.size.x <= cameraBounds.size.x ? 0f : mapBounds.size.x - cameraBounds.size.x,
+                mapBounds.size.y <= cameraBounds.size.y ? 0f : mapBounds.size.y - cameraBounds.size.y,
+                cameraBounds.size.z
+            )
+        );
+
+        return new Vector3(
+          Mathf.Clamp(target.transform.position.x, cameraMoveBounds.min.x, cameraMoveBounds.max.x),
+          Mathf.Clamp(target.transform.position.y, cameraMoveBounds.min.y, cameraMoveBounds.max.y),
+          transform.position.z
+        );
+    }
+
 }
