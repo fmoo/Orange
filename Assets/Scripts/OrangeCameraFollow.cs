@@ -67,6 +67,7 @@ public class OrangeCameraFollow : MonoBehaviour {
     }
 
     public void DoUpdateNaive() {
+        if (target == null) return;
         Camera c = (affectCamera ?? Camera.current);
         Vector3 v = target.transform.position;
         c.transform.position = new Vector3(
@@ -76,6 +77,7 @@ public class OrangeCameraFollow : MonoBehaviour {
         );
     }
     public void DoUpdateNaiveX() {
+        if (target == null) return;
         Camera c = (affectCamera ?? Camera.current);
         Vector3 v = target.transform.position;
         c.transform.position = new Vector3(
