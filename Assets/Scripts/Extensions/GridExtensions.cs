@@ -44,4 +44,14 @@ public static class GridExtensions {
         bounds.Encapsulate(max);
         return bounds;
     }
+
+    public static IEnumerable<TileBase> GetTiles(this Grid grid, Vector3Int position) {
+        return grid.GetTiles<TileBase>(position);
+    }
+
+    public static IEnumerable<T> GetTiles<T>(this Grid grid, Vector3Int position) where T : TileBase {
+        foreach (var tilemap in grid.GetComponentsInChildren<Tilemap>()) {
+            yield return tilemap.GetTile<T>(position);
+        }
+    }
 }
