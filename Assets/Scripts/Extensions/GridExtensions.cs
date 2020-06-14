@@ -34,4 +34,14 @@ public static class GridExtensions {
         }
         return rect;
     }
+
+    public static Bounds GetTilemapsBounds(this Grid grid) {
+        var rectInt = grid.GetTilemapsRectInt();
+        var min = grid.CellToWorld(rectInt.min.ToVector3Int());
+        var max = grid.CellToWorld(rectInt.max.ToVector3Int());
+        Bounds bounds = new Bounds(min + max / 2f, Vector3.zero);
+        bounds.Encapsulate(min);
+        bounds.Encapsulate(max);
+        return bounds;
+    }
 }
