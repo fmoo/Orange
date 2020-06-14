@@ -13,7 +13,7 @@ public static class GridExtensions {
         return grid.GetCellCenterWorld(new Vector3Int(position.x, position.y, 0));
     }
 
-    public static RectInt GetTilemapsBounds(this Grid grid) {
+    public static RectInt GetTilemapsRectInt(this Grid grid) {
         var tilemaps = grid.GetComponentsInChildren<Tilemap>();
         RectInt rect = new RectInt();
         bool first = true;
