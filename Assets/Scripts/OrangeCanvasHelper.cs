@@ -9,10 +9,13 @@ using UnityEngine.EventSystems;
 [ExecuteInEditMode]
 public class OrangeCanvasHelper : MonoBehaviour {
     [SerializeField] PixelPerfectCamera pixelPerfectCamera;
+    [SerializeField] Camera targetCamera;
     [SerializeField] CanvasScaler canvasScaler;
 
     [SerializeField] OrangeCursor uiCursor;
     [SerializeField] OrangeImageFader blackoutLayer;
+
+    public RectTransform overlayContentContainer;
 
     private IEnumerable<Selectable> GetUISelectables() {
         foreach (var selectable in gameObject.GetComponentsInChildren<Button>(false  /* include_inactive */)) {
@@ -132,13 +135,16 @@ public class OrangeCanvasHelper : MonoBehaviour {
         // DoFocusIfNone(true);
         DoFocusIfNone();
         UpdateScaler();
+        UpdateContainer();
     }
 
     void OnValidate() {
         if (canvasScaler == null)
             canvasScaler = GetComponent<CanvasScaler>();
+        if (targetCamera == null)
+            targetCamera = Camera.main ?? Camera.current;
         if (pixelPerfectCamera == null)
-            pixelPerfectCamera = (Camera.main ?? Camera.current).GetComponent<PixelPerfectCamera>();
+            pixelPerfectCamera = targetCamera.GetComponent<PixelPerfectCamera>();
     }
 
     void Start() {
@@ -154,6 +160,14 @@ public class OrangeCanvasHelper : MonoBehaviour {
         if (canvasScaler == null || pixelPerfectCamera == null) return;
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
         canvasScaler.scaleFactor = Mathf.Min(Screen.height / pixelPerfectCamera.refResolutionY, Screen.width / pixelPerfectCamera.refResolutionX);
+    }
+
+    void UpdateContainer() {
+        if (overlayContentContainer == null || targetCamera == null) return;
+        overlayContentContainer.anchorMin = targetCamera.rect.min;
+        overlayContentContainer.anchorMax = targetCamera.rect.max;
+        overlayContentContainer.offsetMin = Vector2.zero;
+        overlayContentContainer.offsetMax = Vector2.zero;
     }
 
     void DoFocusIfNone(bool onlyIfNull = false) {
