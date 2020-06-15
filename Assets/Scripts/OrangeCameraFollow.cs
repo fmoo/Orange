@@ -101,7 +101,7 @@ public class OrangeCameraFollow : MonoBehaviour {
     }
 
     Vector3 GetClampedPosition(Vector3 wantPosition, Bounds mapBounds) {
-        Bounds cameraBounds = affectCamera.OrthographicBounds();
+        Bounds cameraBounds = affectCamera.GetBoundsRaycasted();
 
         Bounds cameraMoveBounds = new Bounds( //Define the camera's total safe zone for a given map boundary, as defined by mapBounds.
             mapBounds.center,
