@@ -27,7 +27,9 @@ public class OrangeUIImage : MonoBehaviour {
         OnValidate();
     }
 
+#if EDITOR
     public NaughtyAttributes.DropdownList<string> GetEditorDropdown() {
         return OrangeSpriteDB.GetEditorSpriteDropdown(sprites);
     }
+#endif
 }
