@@ -20,6 +20,9 @@ public class OrangeImageFader : MonoBehaviour {
     private int fadeID = 0;
 
     void OnValidate() {
+        if (image == null) {
+            image = GetComponent<UnityEngine.UI.Image>();
+        }
         image.raycastTarget = image.color.a > 0f;
     }
 
