@@ -49,4 +49,12 @@ public static class WaitFor {
             obj.transform.position = Vector3.Lerp(startPosition, targetPosition, tt);
         });
     }
+
+    public static IEnumerator GameObjectMoveAtSpeed(GameObject obj, Vector3 targetPosition, float speed) {
+        Vector3 startPosition = obj.transform.position;
+        while (obj.transform.position != targetPosition) {
+            yield return null;
+            obj.transform.position = Vector3.MoveTowards(obj.transform.position, targetPosition, Time.deltaTime * speed);
+        }
+    }
 }
