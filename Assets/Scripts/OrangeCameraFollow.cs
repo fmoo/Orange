@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
+using NaughtyAttributes;
 
 public class OrangeCameraFollow : MonoBehaviour {
     public GameObject target;
     public Camera affectCamera;
 
-    /// <summary>If set, don't let the camera travel outside these bounds</summary>
-    public Bounds? cameraBounds = null;
+    [SerializeField] private bool enableClamping;
+    [ShowIf("enableClamping")]
+    [SerializeField] private Bounds clampBounds;
 
     public FollowMode followMode = FollowMode.LAG;
 
@@ -26,44 +28,39 @@ public class OrangeCameraFollow : MonoBehaviour {
         }
     }
 
-    public float noScrollRatio = 0.7f;
+    public Vector2 deadZoneRatio = Vector2.one * 0.7f;
     public float cameraSpeed = 2f;
     private bool doneMoving = true;
+
+    const float DONE_MOVING_THRESHOLD = 0.001f;
     void DoUpdateLag() {
-        // This approach kind of sucks. Ideally we'd have some sort of
-        // bounding rectangle and if the player moves outside of it, we move
-        // to follow.
         Camera c = (affectCamera ?? Camera.current);
         Transform cameraTransform = c.transform;
-        Vector3 v = target.transform.position;
 
-        var innerBounds = c.OrthographicBounds();
-        Vector3 cp;
-        innerBounds.size = (innerBounds.size * noScrollRatio) + (Vector3.forward * 100f);
-        if (innerBounds.Contains(v)) {
+        Vector3 targetPos = target.transform.position;
+        targetPos = GetClampedPosition(targetPos);
+
+        // Calculate "dead zone" using the current camera position
+        var deadBounds = c.GetBoundsRaycasted();
+        deadBounds.size = new Vector3(deadBounds.size.x * deadZoneRatio.x, deadBounds.size.y * deadZoneRatio.y, deadBounds.size.z + 100f);
+
+        Vector3 nearestDead;
+        if (deadBounds.Contains(target.transform.position)) {
             doneMoving = true;
             return;
         } else {
-            cp = innerBounds.ClosestPoint(v);
+            // If target is outside the dead bounds, then we want to kind of move things relative to the point
+            // on the edge of the dead band, so we don't suddenly stop.
+            nearestDead = deadBounds.ClosestPoint(target.transform.position);
         }
 
-        var cp2 = Vector3.Lerp(
-            cp,
-            v,
-            cameraSpeed * Time.deltaTime);
+        // Calculate the point we need to move to.
+        var deadMidToTarget = Vector3.Lerp(nearestDead, target.transform.position, cameraSpeed * Time.deltaTime);
+        var newPosition = transform.position + (deadMidToTarget - nearestDead);
 
-        var newPosition = cameraTransform.position + (cp2 - cp);
-        newPosition.z = cameraTransform.position.z;
-
-        if (cameraBounds is Bounds cb && cb.size.x > innerBounds.extents.x && cb.size.y > innerBounds.extents.y) {
-            if (!cb.Contains(newPosition)) {
-                newPosition = cb.ClosestPoint(newPosition);
-            }
-        }
-
-        doneMoving = (newPosition - cameraTransform.position).magnitude < 0.001f;
-        cameraTransform.position = newPosition;
-        // t.position = new Vector3(v.x, v.y, t.position.z);
+        newPosition = GetClampedPosition(newPosition);
+        doneMoving = (newPosition - cameraTransform.position).magnitude < DONE_MOVING_THRESHOLD;
+        cameraTransform.position = newPosition.WithZ(cameraTransform.position.z);
     }
 
     public void DoUpdateNaive() {
@@ -75,9 +72,7 @@ public class OrangeCameraFollow : MonoBehaviour {
             v.y,
             c.transform.position.z
         );
-        if (cameraBounds is Bounds nnCameraBounds) {
-            c.transform.position = GetClampedPosition(c.transform.position, nnCameraBounds);
-        }
+        c.transform.position = GetClampedPosition(c.transform.position);
     }
     public void DoUpdateNaiveX() {
         if (target == null) return;
@@ -92,29 +87,47 @@ public class OrangeCameraFollow : MonoBehaviour {
 
     public IEnumerator WaitForMovementDone() {
         doneMoving = false;
-        var oldScrollRatio = noScrollRatio;
-        noScrollRatio = 0f;
+        var oldScrollRatio = deadZoneRatio;
+        deadZoneRatio = Vector2.zero;
         while (!doneMoving) {
             yield return new WaitForSeconds(0.1f);
         }
-        noScrollRatio = oldScrollRatio;
+        deadZoneRatio = oldScrollRatio;
     }
 
-    Vector3 GetClampedPosition(Vector3 wantPosition, Bounds mapBounds) {
+    public void ClampTo(Bounds bounds) {
+        enableClamping = true;
+        clampBounds = bounds;
+    }
+
+    public void ClampTo(SpriteRenderer sprite) {
+        if (sprite != null) {
+            enableClamping = true;
+            clampBounds = sprite.bounds;
+        }
+    }
+
+    public void DisableClamping() {
+        enableClamping = false;
+    }
+
+    Vector3 GetClampedPosition(Vector3 wantPosition) {
+        if (!enableClamping) return wantPosition;
+
         Bounds cameraBounds = affectCamera.GetBoundsRaycasted();
 
         Bounds cameraMoveBounds = new Bounds( //Define the camera's total safe zone for a given map boundary, as defined by mapBounds.
-            mapBounds.center,
+            clampBounds.center,
             new Vector3(
-                mapBounds.size.x <= cameraBounds.size.x ? 0f : mapBounds.size.x - cameraBounds.size.x,
-                mapBounds.size.y <= cameraBounds.size.y ? 0f : mapBounds.size.y - cameraBounds.size.y,
+                clampBounds.size.x <= cameraBounds.size.x ? 0f : clampBounds.size.x - cameraBounds.size.x,
+                clampBounds.size.y <= cameraBounds.size.y ? 0f : clampBounds.size.y - cameraBounds.size.y,
                 cameraBounds.size.z
             )
         );
 
         return new Vector3(
-          Mathf.Clamp(target.transform.position.x, cameraMoveBounds.min.x, cameraMoveBounds.max.x),
-          Mathf.Clamp(target.transform.position.y, cameraMoveBounds.min.y, cameraMoveBounds.max.y),
+          Mathf.Clamp(wantPosition.x, cameraMoveBounds.min.x, cameraMoveBounds.max.x),
+          Mathf.Clamp(wantPosition.y, cameraMoveBounds.min.y, cameraMoveBounds.max.y),
           transform.position.z
         );
     }
