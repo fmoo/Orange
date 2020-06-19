@@ -2,17 +2,12 @@
 
 public static class CameraExtensions {
     public static Bounds OrthographicBounds(this Camera camera) {
-        float screenAspect = (float)Screen.width / (float)Screen.height;
-        float cameraHeight = camera.orthographicSize * 2;
-        Bounds bounds = new Bounds(
-            camera.transform.position,
-            new Vector3(cameraHeight * screenAspect, cameraHeight, 0));
-        return bounds;
+        var v1 = camera.ViewportToWorldPoint(Vector3.zero);
+        var v2 = camera.ViewportToWorldPoint(Vector3.one);
+        return new Bounds((v1 + v2) / 2f, (v2 - v1).WithZ(100f));
     }
 
     public static Bounds GetBoundsRaycasted(this Camera camera) {
-        var bottomLeft = camera.ScreenToWorldPoint(Vector3.zero);
-        var topRight = camera.ScreenToWorldPoint(new Vector3(camera.pixelWidth, camera.pixelHeight));
-        return new Bounds(topRight + bottomLeft / 2, topRight - bottomLeft);
+        return camera.OrthographicBounds();
     }
 }
