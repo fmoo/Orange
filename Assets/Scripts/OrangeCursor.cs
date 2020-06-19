@@ -31,7 +31,7 @@ public class OrangeCursor : MonoBehaviour {
     void OnValidate() {
         if (defaultParent == null) defaultParent = transform;
         var renderer = GetComponent<Image>();
-        renderer.raycastTarget = false;
+        if (renderer != null) renderer.raycastTarget = false;
         rectTransform = this.GetOrCreateComponent<RectTransform>();
         scaleCoeff = new Vector2(1f / rectTransform.localScale.x, 1f / rectTransform.localScale.y);
     }
