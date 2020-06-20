@@ -125,6 +125,10 @@ public static class DirectionsUtils {
         return NearestDirection4(new Vector2(v.x, v.y));
     }
 
+    public static Directions8 NearestDirection8(this Vector3 v) {
+        return v.xy().NearestDirection8();
+    }
+
     public static Directions8 NearestDirection8(this Vector2 v) {
         // TODO: Return diagonals
         float angle = Vector2.Angle(v, Vector2.up);
