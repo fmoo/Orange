@@ -32,7 +32,7 @@ public static class MonoBehaviourExtensions {
 
     private static IEnumerator CoroutineWithFinishAction(IEnumerator coroutine, System.Action onDone) {
         yield return coroutine;
-        onDone();
+        onDone?.Invoke();
     }
 
     private static IEnumerator LaterCoroutine(float inSeconds, System.Action onDone) {
