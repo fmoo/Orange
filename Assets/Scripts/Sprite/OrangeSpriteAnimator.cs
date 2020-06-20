@@ -11,6 +11,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     public bool destroyOnDone = true;
     public float playbackSpeed = 1f;
     public System.Action onAnimationDone;
+    public bool resetTimeOnChange = true;
 
     private OrangeSpriteManagerAnimation animator;
     private float timeElapsed = 0f;
@@ -26,7 +27,8 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         if (animationName == this.animationName) return;
         onAnimationDone?.Invoke();
         onAnimationDone = null;
-        timeElapsed = 0f;
+        if (resetTimeOnChange)
+            timeElapsed = 0f;
         stallTime = 0f;
         this.animationName = animationName;
         if (animator == null)
@@ -48,6 +50,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         }
         enabled = false;
         animationName = "";
+        timeElapsed = 0f;
         stallTime = 0f;
     }
 
