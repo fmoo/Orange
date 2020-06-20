@@ -130,14 +130,21 @@ public static class DirectionsUtils {
     }
 
     public static Directions8 NearestDirection8(this Vector2 v) {
-        // TODO: Return diagonals
-        float angle = Vector2.Angle(v, Vector2.up);
-        if (angle < -135f || angle > 135f) {
+        float angle = v.GetAngleTo(Vector2.up);
+        if (angle < -157.5f || angle > 157.5f) {
             return Directions8.DOWN;
-        } else if (angle < -45f) {
+        } else if (angle < -112.4f) {
+            return Directions8.DOWNLEFT;
+        } else if (angle > 112.4f) {
+            return Directions8.DOWNRIGHT;
+        } else if (angle < -67.5f) {
             return Directions8.LEFT;
-        } else if (angle > 45f) {
+        } else if (angle > 67.5f) {
             return Directions8.RIGHT;
+        } else if (angle < -22.5f) {
+            return Directions8.UPLEFT;
+        } else if (angle > 22.5f) {
+            return Directions8.UPRIGHT;
         } else {
             return Directions8.UP;
         }
