@@ -40,13 +40,26 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         stallTime = 0f;
     }
 
+    private bool dirty = false;
+
+    void LateUpdate() {
+        if (dirty) {
+            dirty = false;
+            if (image != null)
+                image.SetNativeSize();
+        }
+    }
+
     public void StopAnimation(string spriteName) {
         var sprite = sprites.GetSprite(spriteName);
         if (sprite == null) {
             Debug.LogError($"No sprite for {spriteName}!");
         } else {
             if (spriteRenderer != null) sprite.SetRendererSprite(spriteRenderer);
-            if (image != null) sprite.SetUIImageSprite(image);
+            if (image != null) {
+                sprite.SetUIImageSprite(image);
+                dirty = true;
+            }
         }
         enabled = false;
         animationName = "";
@@ -72,8 +85,11 @@ public class OrangeSpriteAnimator : MonoBehaviour {
 
         if (image == null)
             image = GetComponent<UnityEngine.UI.Image>();
-        if (image != null)
-            anim.GetSpriteForIndex(0).SetUIImageSprite(image);
+        if (image != null) {
+            var sprite = anim.GetSpriteForIndex(0);
+            sprite.SetUIImageSprite(image);
+            dirty = true;
+        }
         SetAnimation(animationName);
     }
 
@@ -105,8 +121,10 @@ public class OrangeSpriteAnimator : MonoBehaviour {
             if (spriteRenderer != null) {
                 sprite.SetRendererSprite(spriteRenderer);
             }
-            if (image != null)
+            if (image != null) {
                 sprite.SetUIImageSprite(image);
+                dirty = true;
+            }
         }
 
         if (sprite == null) {
