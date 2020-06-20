@@ -93,4 +93,11 @@ public class OrangeSpriteDB : ScriptableObject {
         renameImportedSprites = true;
         flipImportedSprites = false;
     }
+    [NaughtyAttributes.Button("CLEAR ALL")]
+    public void Clear() {
+        sprites.Clear();
+        animations.Clear();
+        importSprites = new Sprite[] {};
+    }
+
 }
