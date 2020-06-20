@@ -149,4 +149,27 @@ public static class DirectionsUtils {
             return Directions8.UP;
         }
     }
+
+    public static string ToCompass(this Directions8 d) {
+        switch (d) {
+            case Directions8.DOWN:
+                return "S";
+            case Directions8.DOWNLEFT:
+                return "SW";
+            case Directions8.LEFT:
+                return "W";
+            case Directions8.UPLEFT:
+                return "NW";
+            case Directions8.UP:
+                return "N";
+            case Directions8.UPRIGHT:
+                return "NE";
+            case Directions8.RIGHT:
+                return "E";
+            case Directions8.DOWNRIGHT:
+                return "SE";
+            default:
+                return "N";
+        }
+    }
 }
