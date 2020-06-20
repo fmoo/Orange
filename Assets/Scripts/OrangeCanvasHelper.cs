@@ -158,8 +158,13 @@ public class OrangeCanvasHelper : MonoBehaviour {
 
     void UpdateScaler() {
         if (canvasScaler == null || pixelPerfectCamera == null) return;
+        // TODO: do nothing if canvas render mode is set to Camera
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-        canvasScaler.scaleFactor = Mathf.Min(Screen.height / pixelPerfectCamera.refResolutionY, Screen.width / pixelPerfectCamera.refResolutionX);
+        if (pixelPerfectCamera.stretchFill && pixelPerfectCamera.cropFrameX && pixelPerfectCamera.cropFrameY) {
+            canvasScaler.scaleFactor = Mathf.Min((float)Screen.height / pixelPerfectCamera.refResolutionY, (float)Screen.width / pixelPerfectCamera.refResolutionX);
+        } else {
+            canvasScaler.scaleFactor = Mathf.Min(Screen.height / pixelPerfectCamera.refResolutionY, Screen.width / pixelPerfectCamera.refResolutionX);
+        }
     }
 
     void UpdateContainer() {
