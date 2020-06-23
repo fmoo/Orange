@@ -33,6 +33,9 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         this.animationName = animationName;
         if (animator == null)
             Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}");
+        var sprite = animator.GetSpriteForIndex(0);
+        if (sprite != null)
+            SetSprite(sprite);
     }
 
     public void ResetAnimation() {
@@ -55,11 +58,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         if (sprite == null) {
             Debug.LogError($"No sprite for {spriteName}!");
         } else {
-            if (spriteRenderer != null) sprite.SetRendererSprite(spriteRenderer);
-            if (image != null) {
-                sprite.SetUIImageSprite(image);
-                dirty = true;
-            }
+            SetSprite(sprite);
         }
         enabled = false;
         animationName = "";
@@ -80,17 +79,22 @@ public class OrangeSpriteAnimator : MonoBehaviour {
 
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
-            anim.GetSpriteForIndex(0).SetRendererSprite(spriteRenderer);
 
         if (image == null)
             image = GetComponent<UnityEngine.UI.Image>();
-        if (image != null) {
-            var sprite = anim.GetSpriteForIndex(0);
-            sprite.SetUIImageSprite(image);
-            dirty = true;
-        }
         SetAnimation(animationName);
+    }
+
+    void SetSprite(OrangeSpriteManagerSprite sprite) {
+        if (spriteRenderer != null) {
+            sprite.SetRendererSprite(spriteRenderer);
+        }
+        if (image != null) {
+            if (sprite.sprite != image) {
+                sprite.SetUIImageSprite(image);
+                dirty = true;
+            }
+        }
     }
 
     // Update is called once per frame
@@ -118,13 +122,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         var sprite = animator.GetSpriteForTime(timeElapsed);
 
         if (sprite != null) {
-            if (spriteRenderer != null) {
-                sprite.SetRendererSprite(spriteRenderer);
-            }
-            if (image != null) {
-                sprite.SetUIImageSprite(image);
-                dirty = true;
-            }
+            SetSprite(sprite);
         }
 
         if (sprite == null) {
