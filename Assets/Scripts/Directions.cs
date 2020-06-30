@@ -142,6 +142,11 @@ public static class DirectionsUtils {
         return Vector2.zero;
     }
 
+    public static Vector3 ToVector3(this Directions8 d) {
+        var v2 = d.ToVector2();
+        return new Vector3(v2.x, v2.y, 0f);
+    }
+
     public static Directions4 NearestDirection4(this Vector2 v) {
         float angle = v.GetAngleTo(Vector2.up);
         if (angle < -135f || angle > 135f) {
