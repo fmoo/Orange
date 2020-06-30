@@ -27,6 +27,14 @@ public static class WaitFor {
         }
     }
 
+    public static IEnumerator DoNTimes(int numberOfTimes, float every, System.Action<int> callback) {
+        int count = 1;
+        while (count <= numberOfTimes) {
+            yield return WaitFor.Seconds(every);
+            callback(count);
+            count += 1;
+        }
+    }
 
     public static IEnumerator SecondsOrInput(float seconds, params InputButton[] buttons) {
         var t0 = Time.time;
