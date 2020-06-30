@@ -34,6 +34,7 @@ public class OrangeCursor : MonoBehaviour {
         if (renderer != null) renderer.raycastTarget = false;
         rectTransform = this.GetOrCreateComponent<RectTransform>();
         scaleCoeff = new Vector2(1f / rectTransform.localScale.x, 1f / rectTransform.localScale.y);
+        // TODO: Set Pivot to center.  Pointer cursors should be implemented as children positioned relatively.
     }
 
     void Start() {
@@ -107,7 +108,7 @@ public class OrangeCursor : MonoBehaviour {
 
         if (animateMotion) {
             rectTransform.position = Vector3.MoveTowards(rectTransform.position, targetRect.GetWorldCenter(), Time.deltaTime * moveSpeed);
-            rectTransform.sizeDelta = Vector2.MoveTowards(rectTransform.sizeDelta, targetSize, Time.deltaTime * scaleSpeed);
+            rectTransform.sizeDelta = Vector2.MoveTowards(rectTransform.sizeDelta, targetSize, Time.deltaTime * scaleSpeed); // TODO: include padding?
         } else {
             rectTransform.position = targetRect.GetWorldCenter();
             rectTransform.sizeDelta = targetSize;
@@ -120,7 +121,7 @@ public class OrangeCursor : MonoBehaviour {
             rectTransform = GetComponent<RectTransform>();
 
         var targetTransform = target.GetComponent<RectTransform>();
-        rectTransform.position = targetTransform.position;
-        rectTransform.sizeDelta = padding + targetTransform.sizeDelta * scaleCoeff;
+        rectTransform.position = targetTransform.GetWorldCenter();
+        rectTransform.sizeDelta = padding + targetTransform.rect.size * scaleCoeff;
     }
 }
