@@ -38,6 +38,11 @@ public class OrangeSpriteAnimator : MonoBehaviour {
             SetSprite(sprite);
     }
 
+    public void ResetAnimation(string animationName) {
+        SetAnimation(animationName);
+        ResetAnimation();
+    }
+
     public void ResetAnimation() {
         timeElapsed = 0f;
         stallTime = 0f;
