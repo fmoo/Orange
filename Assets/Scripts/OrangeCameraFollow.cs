@@ -37,6 +37,8 @@ public class OrangeCameraFollow : MonoBehaviour {
         Camera c = (affectCamera ?? Camera.current);
         Transform cameraTransform = c.transform;
 
+        if (target == null) return;
+
         Vector3 targetPos = target.transform.position;
         targetPos = GetClampedPosition(targetPos);
 
