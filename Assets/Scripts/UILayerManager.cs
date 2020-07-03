@@ -127,7 +127,7 @@ public class UILayerManager : MonoBehaviour {
         if (navStackDepth > 0) {
             doPush();
         } else {
-            doPush();
+            this.StartCoroutine(GenUIStartTransition(), doPush);
         }
     }
 
@@ -148,8 +148,18 @@ public class UILayerManager : MonoBehaviour {
         if (navStackDepth > 1) {
             doPop();
         } else {
-            doPop();
+            this.StartCoroutine(GenUIEndTransition(), doPop);
         }
+    }
+
+    IEnumerator GenUIStartTransition() {
+        if (underlay == null) yield break;
+        yield return underlay.StartFade(Color.clear, Color.black.WithAlpha(0.5f), 0.3f);
+    }
+
+    IEnumerator GenUIEndTransition() {
+        if (underlay == null) yield break;
+        yield return underlay.StartFade(Color.black.WithAlpha(0.5f), Color.clear, 0.3f);
     }
 
     public int navStackDepth {
