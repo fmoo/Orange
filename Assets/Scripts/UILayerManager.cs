@@ -24,6 +24,7 @@ public class UILayerManager : MonoBehaviour {
     public void PlayBGM(string clipName) {
         bgmBank.PlayLoopable(audioSource, audioLoopSource, clipName);
     }
+
     public void PlayConfirmSound() {
         PlaySFX(confirmSoundName);
     }
@@ -36,6 +37,23 @@ public class UILayerManager : MonoBehaviour {
     public void PlayErrorSound() {
         PlaySFX(errorSoundName);
     }
+
+    string GetSoundName(UISound sound) {
+        if (sound == UISound.CONFIRM) {
+            return confirmSoundName;
+        } else if (sound == UISound.CANCEL) {
+            return cancelSoundName;
+        } else if (sound == UISound.ERROR) {
+            return errorSoundName;
+        } else if (sound == UISound.HOVER) {
+            return hoverSoundName;
+        } else if (sound == UISound.NONE) {
+            return "";
+        }
+        Debug.LogError($"Unknown Sound {sound}");
+        return "";
+    }
+
     public System.Action WithConfirmSound(System.Action action) {
         return WithSound("confirm", action);
     }
@@ -45,7 +63,11 @@ public class UILayerManager : MonoBehaviour {
     public System.Action WithHoverSound(System.Action action) {
         return WithSound("selectionChanged", action);
     }
+    public void PlaySFX(UISound sound) {
+        PlaySFX(GetSoundName(sound));
+    }
     public void PlaySFX(string clipName) {
+        if (clipName == "") return;
         if (soundBank == null) {
             Debug.LogError($"soundBank is null on UILayerManager", this);
             return;
@@ -90,29 +112,43 @@ public class UILayerManager : MonoBehaviour {
         if (audioLoopSource != null) StartCoroutine(audioLoopSource.WaitForAudioFade(targetVolume, duration));
     }
 
-    public void PushLayer(UILayer layer) {
-        // Debug.Log($"PushLayer: {layer}");
-        PlayConfirmSound();
-        var ctx = new UILayerPushContext();
-        var selectedObject = EventSystem.current.currentSelectedGameObject;
-        if (selectedObject != null) ctx.selection = selectedObject.GetComponent<Selectable>();
-        ctx.visibleLayers.AddRange(GetComponentsInChildren<UILayer>().Where(l => l.shown));
-        ctx.visibleLayers.ForEach(l => l.Hide());
-        navigationStack.Push(ctx);
-        layer.Show();
+    public void PushLayer(UILayer layer, UISound sound = UISound.CONFIRM) {
+        System.Action doPush = () => {
+            // Debug.Log($"PushLayer: {layer}");
+            PlaySFX(GetSoundName(sound));
+            var ctx = new UILayerPushContext();
+            var selectedObject = EventSystem.current.currentSelectedGameObject;
+            if (selectedObject != null) ctx.selection = selectedObject.GetComponent<Selectable>();
+            ctx.visibleLayers.AddRange(GetComponentsInChildren<UILayer>().Where(l => l.shown));
+            ctx.visibleLayers.ForEach(l => l.Hide());
+            navigationStack.Push(ctx);
+            layer.Show();
+        };
+        if (navStackDepth > 0) {
+            doPush();
+        } else {
+            doPush();
+        }
     }
 
-    public void PopLayer(bool useConfirmSound = false) {
+    public void PopLayer(UISound sound = UISound.CANCEL) {
         if (navigationStack.IsNullOrEmpty()) return;
-        if (useConfirmSound) PlayConfirmSound(); else PlayCancelSound();
-        foreach (var layer in GetComponentsInChildren<UILayer>().Where(layer => layer.shown)) {
-            layer.Hide();
-        }
-        var popped = navigationStack.Pop();
-        // Debug.Log($"PopLayer: {popped}");
-        popped.visibleLayers.ForEach(layer => layer.Show(false));
-        if (popped.selection != null) {
-            popped.selection.Select();
+        System.Action doPop = () => {
+            PlaySFX(GetSoundName(sound));
+            foreach (var layer in GetComponentsInChildren<UILayer>().Where(layer => layer.shown)) {
+                layer.Hide();
+            }
+            var popped = navigationStack.Pop();
+            // Debug.Log($"PopLayer: {popped}");
+            popped.visibleLayers.ForEach(layer => layer.Show(false));
+            if (popped.selection != null) {
+                popped.selection.Select();
+            }
+        };
+        if (navStackDepth > 1) {
+            doPop();
+        } else {
+            doPop();
         }
     }
 
@@ -120,6 +156,14 @@ public class UILayerManager : MonoBehaviour {
         get {
             return navigationStack.Count;
         }
+    }
+
+    public enum UISound {
+        NONE = 0,
+        CONFIRM = 1,
+        CANCEL = 2,
+        HOVER = 3,
+        ERROR = 4,
     }
 
     private Stack<UILayerPushContext> navigationStack = new Stack<UILayerPushContext>();
