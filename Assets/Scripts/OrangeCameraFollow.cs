@@ -113,6 +113,10 @@ public class OrangeCameraFollow : MonoBehaviour {
         enableClamping = false;
     }
 
+    /// <summary>Slop added to the clamp bounds for checking whether an axis should be locked.
+    /// Useful if your display resolution is not an even multiple of your tile size.</summary>
+    public Vector2 fixedPanSlop = Vector2.zero;
+
     Vector3 GetClampedPosition(Vector3 wantPosition) {
         if (!enableClamping) return wantPosition;
 
@@ -121,8 +125,8 @@ public class OrangeCameraFollow : MonoBehaviour {
         Bounds cameraMoveBounds = new Bounds( //Define the camera's total safe zone for a given map boundary, as defined by mapBounds.
             clampBounds.center,
             new Vector3(
-                clampBounds.size.x <= cameraBounds.size.x ? 0f : clampBounds.size.x - cameraBounds.size.x,
-                clampBounds.size.y <= cameraBounds.size.y ? 0f : clampBounds.size.y - cameraBounds.size.y,
+                clampBounds.size.x - fixedPanSlop.x <= cameraBounds.size.x ? 0f : clampBounds.size.x - cameraBounds.size.x,
+                clampBounds.size.y - fixedPanSlop.y <= cameraBounds.size.y ? 0f : clampBounds.size.y - cameraBounds.size.y,
                 cameraBounds.size.z
             )
         );
