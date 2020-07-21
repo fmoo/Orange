@@ -245,4 +245,16 @@ public static class DirectionsUtils {
                 return "N";
         }
     }
+
+    public static Directions4 Inverse(this Directions4 d) {
+        if (d == Directions4.UP) {
+            return Directions4.DOWN;
+        } else if (d == Directions4.DOWN) {
+            return Directions4.UP;
+        } else if (d == Directions4.LEFT) {
+            return Directions4.RIGHT;
+        } else {
+            return Directions4.LEFT;
+        }
+    }
 }
