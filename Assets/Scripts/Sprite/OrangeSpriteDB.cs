@@ -67,6 +67,8 @@ public class OrangeSpriteDB : ScriptableObject {
     public bool renameImportedSprites = true;
     [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
     public bool flipImportedSprites = false;
+    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    public bool loopImportedAnimation = true;
     [NaughtyAttributes.Button("Import Sprites")]
     public void DoImportSprites() {
         int ii = 0;
@@ -86,6 +88,8 @@ public class OrangeSpriteDB : ScriptableObject {
             animations.Add(new OrangeSpriteManagerAnimation() {
                 name = importAnimName,
                 config = config,
+                duration = (1f / 60f) * importSprites.Count() * 2f,
+                loop = loopImportedAnimation
             });
         }
         importSprites = new Sprite[0];
