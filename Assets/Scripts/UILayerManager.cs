@@ -133,22 +133,19 @@ public class UILayerManager : MonoBehaviour {
 
     public void PopLayer(UISound sound = UISound.CANCEL) {
         if (navigationStack.IsNullOrEmpty()) return;
-        System.Action doPop = () => {
-            PlaySFX(GetSoundName(sound));
-            foreach (var layer in GetComponentsInChildren<UILayer>().Where(layer => layer.shown)) {
-                layer.Hide();
-            }
-            var popped = navigationStack.Pop();
-            // Debug.Log($"PopLayer: {popped}");
-            popped.visibleLayers.ForEach(layer => layer.Show(false));
-            if (popped.selection != null) {
-                popped.selection.Select();
-            }
-        };
-        if (navStackDepth > 1) {
-            doPop();
-        } else {
-            this.StartCoroutine(GenUIEndTransition(), doPop);
+        PlaySFX(GetSoundName(sound));
+        foreach (var layer in GetComponentsInChildren<UILayer>().Where(layer => layer.shown)) {
+            layer.Hide();
+        }
+        var popped = navigationStack.Pop();
+        // Debug.Log($"PopLayer: {popped}");
+        popped.visibleLayers.ForEach(layer => layer.Show(false));
+        if (popped.selection != null) {
+            popped.selection.Select();
+        }
+
+        if (navStackDepth == 0) {
+            this.StartCoroutine(GenUIEndTransition());
         }
     }
 
