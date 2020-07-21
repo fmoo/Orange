@@ -37,6 +37,12 @@ public static class VectorExtensions {
     public static Vector3 WithZ(this Vector3 v, float z) {
         return new Vector3(v.x, v.y, z);
     }
+    public static Vector3 Round(this Vector3 v, int places) {
+        return new Vector3(
+            (float)System.Math.Round(v.x, places),
+            (float)System.Math.Round(v.y, places),
+            (float)System.Math.Round(v.z, places));
+    }
 
     public static int ManhattanDistance(this Vector2Int a, Vector2Int b) {
         return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
