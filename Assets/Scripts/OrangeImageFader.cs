@@ -40,6 +40,9 @@ public class OrangeImageFader : MonoBehaviour {
         done = true;
     }
     public IEnumerator WaitForFadeOrInput(Color startColor, Color endColor, float duration, params InputButton[] buttons) {
+        // early out if the current image color is already the target color.
+        if (image.color == endColor) yield break;
+
         StartCoroutine(StartFade(startColor, endColor, duration));
         // yield return StartFade(startColor, endColor, duration);
         yield return WaitFor.SecondsOrInput(duration, buttons);
@@ -47,6 +50,9 @@ public class OrangeImageFader : MonoBehaviour {
     }
 
     public IEnumerator StartFade(Color startColor, Color endColor, float duration) {
+        // early out if the current image color is already the target color.
+        if (image.color == endColor) yield break;
+
         fadeID++;
         var thisFade = fadeID;
         if (duration <= 0f) {
