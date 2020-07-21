@@ -138,4 +138,7 @@ public class OrangeCameraFollow : MonoBehaviour {
         );
     }
 
+    void Start() {
+        DoUpdateNaive();
+    }
 }
