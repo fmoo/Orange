@@ -21,6 +21,10 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         stallTime += addTime;
     }
 
+    public bool HasAnimation(string animationName) {
+        return sprites != null && sprites.GetAnimation(animationName) != null;
+    }
+
     public void SetAnimation(string animationName) {
         enabled = true;
         animator = sprites.GetAnimation(animationName);
