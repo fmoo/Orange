@@ -7,27 +7,29 @@ using System.Collections;
  * Useful for things like shadows.
  */
 public class CopySpriteFrom : MonoBehaviour {
-	public Component SourceObject;
+    public Component SourceObject;
 
-	private SpriteRenderer _SourceRenderer;
-	private Transform _Transform;
+    private SpriteRenderer _SourceRenderer;
+    private Transform _Transform;
 
-  /**
-   * Just grab a reference to the target component's Renderer for
-   * quicker access during Update.
-   */
-	void Start () {
-		if (SourceObject == null)
-			return;
-		_SourceRenderer = SourceObject.GetComponent<SpriteRenderer> ();
-	}
+    /**
+     * Just grab a reference to the target component's Renderer for
+     * quicker access during Update.
+     */
+    void Start() {
+        if (SourceObject == null)
+            return;
+        _SourceRenderer = SourceObject.GetComponent<SpriteRenderer>();
+    }
 
-	void Update () {
-    // Don't crap out if we couldn't find a source object.
-		if (_SourceRenderer == null)
-			return;
+    void LateUpdate() {
+        // Don't crap out if we couldn't find a source object.
+        if (_SourceRenderer == null)
+            return;
 
-    // Easy. Just copy the sprite reference.
-		GetComponent<SpriteRenderer> ().sprite = _SourceRenderer.sprite;
-	}
+        // Easy. Just copy the sprite reference.
+		var sr = GetComponent<SpriteRenderer>();
+        sr.sprite = _SourceRenderer.sprite;
+		sr.flipX = _SourceRenderer.flipX;
+    }
 }
