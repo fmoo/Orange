@@ -58,6 +58,30 @@ public static class WaitFor {
         });
     }
 
+    public static IEnumerator GameObjectMoveBezier(GameObject obj, Vector3 bezierPosition, Vector3 targetPosition, float duration) {
+        Vector3 startPosition = obj.transform.position;
+
+        yield return WaitFor.TimeRatio(duration, (float v) => {
+            obj.transform.position = Vector3.Lerp(
+                Vector3.Lerp(startPosition, bezierPosition, v),
+                Vector3.Lerp(bezierPosition, targetPosition, v),
+                v
+            );
+        });
+    }
+
+    public static IEnumerator GameObjectMoveBezier(GameObject obj, Vector3 bezierPosition, Transform target, float duration) {
+        Vector3 startPosition = obj.transform.position;
+
+        yield return WaitFor.TimeRatio(duration, (float v) => {
+            obj.transform.position = Vector3.Lerp(
+                Vector3.Lerp(startPosition, bezierPosition, v),
+                Vector3.Lerp(bezierPosition, target.position, v),
+                v
+            );
+        });
+    }
+
     public static IEnumerator GameObjectMoveAtSpeed(GameObject obj, Vector3 targetPosition, float speed) {
         Vector3 startPosition = obj.transform.position;
         while (obj.transform.position != targetPosition) {
