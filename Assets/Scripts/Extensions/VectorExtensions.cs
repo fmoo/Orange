@@ -8,6 +8,10 @@ public static class VectorExtensions {
         return Vector2.Angle(from, to) * sign;
     }
 
+    public static Vector3 Midpoint(this Vector3 v1, Vector3 v2) {
+        return (v1 + v2) / 2.0f;
+    }
+
     public static Vector2 xy(this Vector3 v) {
         return new Vector2(v.x, v.y);
     }
