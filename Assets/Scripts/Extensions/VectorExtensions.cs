@@ -54,4 +54,19 @@ public static class VectorExtensions {
     public static float ManhattanDistance(this Vector2 a, Vector2 b) {
         return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
     }
+
+    public static Vector2 WithX(this Vector2 v, float x) {
+        return new Vector2(x, v.y);
+    }
+    public static Vector2 WithY(this Vector2 v, float y) {
+        return new Vector2(v.x, y);
+    }
+
+    public static (float, float, float) Sign(this Vector3 v) {
+        return (
+            Mathf.Sign(v.x),
+            Mathf.Sign(v.y),
+            Mathf.Sign(v.z)
+        );
+    }
 }
