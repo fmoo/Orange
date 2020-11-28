@@ -24,6 +24,10 @@ public static class VectorExtensions {
         return new Vector3Int(v.x, v.y, 0);
     }
 
+    public static Vector3 ToVector3(this Vector2 v) {
+        return new Vector3(v.x, v.y, 0f);
+    }
+
     public static Vector3 LerpSin(this Vector3 a, Vector3 b, float t) {
         if (t >= 1f) t = 1f;
         return Vector3.Lerp(a, b, Mathf.Sin(t * Mathf.PI));
