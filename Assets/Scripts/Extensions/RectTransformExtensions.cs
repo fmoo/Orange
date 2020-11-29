@@ -28,6 +28,24 @@ public static class RectTransformExtensions {
         return corners;
     }
 
+    public static Corners GetWorldCornersStruct(this RectTransform rect) {
+        var corners = rect.GetWorldCorners();
+        return new Corners(corners);
+    }
+
+    public class Corners {
+        public Corners(Vector3[] corners) {
+            LowerLeft = corners[0];
+            UpperLeft = corners[1];
+            UpperRight = corners[2];
+            LowerRight = corners[3];
+        }
+        public readonly Vector3 UpperLeft = Vector3.zero;
+        public readonly Vector3 UpperRight = Vector3.zero;
+        public readonly Vector3 LowerLeft = Vector3.zero;
+        public readonly Vector3 LowerRight = Vector3.zero;
+    }
+
     static Vector3[] _corners = new Vector3[4];
     public static Vector3 GetWorldCenter(this RectTransform rect) {
         rect.GetWorldCorners(_corners);
