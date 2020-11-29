@@ -11,6 +11,7 @@ public class OrangeCanvasHelper : MonoBehaviour {
     [SerializeField] PixelPerfectCamera pixelPerfectCamera;
     [SerializeField] Camera targetCamera;
     [SerializeField] CanvasScaler canvasScaler;
+    [SerializeField] Canvas canvas;
 
     [SerializeField] OrangeCursor uiCursor;
     [SerializeField] OrangeImageFader blackoutLayer;
@@ -138,9 +139,15 @@ public class OrangeCanvasHelper : MonoBehaviour {
         UpdateContainer();
     }
 
+    void LateUpdate() {
+        UpdatePixelSnap();
+    }
+
     void OnValidate() {
         if (canvasScaler == null)
             canvasScaler = GetComponent<CanvasScaler>();
+        if (canvas == null)
+            canvas = GetComponent<Canvas>();
         if (targetCamera == null)
             targetCamera = Camera.main ?? Camera.current;
         if (pixelPerfectCamera == null)
@@ -154,6 +161,16 @@ public class OrangeCanvasHelper : MonoBehaviour {
         // Unless we have a blackout/fader layer.  Then put THAT last.
         if (blackoutLayer != null)
             blackoutLayer.transform.SetAsLastSibling();
+    }
+
+    public bool cameraSpacePixelSnap = true;
+    void UpdatePixelSnap() {
+        if (canvas == null || pixelPerfectCamera == null) return;
+        if (canvas.renderMode != RenderMode.ScreenSpaceCamera) return;
+        if (!Application.isPlaying || !cameraSpacePixelSnap) return;
+
+        pixelPerfectCamera.transform.position =
+            pixelPerfectCamera.RoundToPixel(pixelPerfectCamera.transform.position);
     }
 
     void UpdateScaler() {
