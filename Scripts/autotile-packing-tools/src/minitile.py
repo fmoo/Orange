@@ -1,7 +1,10 @@
 import os
 import os.path
 import PIL
+import sys
 from PIL import Image
+from argparse import ArgumentParser
+from typing import Any
 
 
 def upscale_file(input_filename, factor):
@@ -10,7 +13,8 @@ def upscale_file(input_filename, factor):
     input_image = Image.open(input_filename)
     imw, imh = input_image.size
     output_image = input_image.resize(
-        (imw * factor, imh * factor), Image.NEAREST)
+        (int(imw * factor), int(imh * factor)), Image.NEAREST
+    )
     output_image.save(output_filename)
 
 
@@ -81,8 +85,7 @@ def flatten_tiled_file_to_gm16(input_image, MTS=8, zigzag=False):
     nw, nh = int(imw / MTS / 2 / 5), int(imh / MTS / 2 / 3)
     numcells = nw * nh
 
-    output_image = Image.new(
-        "RGBA", (16 * (MTS * 2), (1 + numcells) * (MTS * 2)))
+    output_image = Image.new("RGBA", (16 * (MTS * 2), (1 + numcells) * (MTS * 2)))
     INW = MTS * 2 * 5
     INH = MTS * 2 * 3
 
@@ -176,8 +179,7 @@ def unpack_image_a4(input_image, MTS=8, for_gm=False) -> Image.Image:
                  (jj + 1) * INW, ((ii * INH) + (MTS * 10)))
             )
             converted = unpack_subimage_9cell(lateral_subimage, MTS)
-            output_image.paste(
-                converted, (jj * OUTW, ((ii * OUTH) + (MTS * 6))))
+            output_image.paste(converted, (jj * OUTW, ((ii * OUTH) + (MTS * 6))))
     return output_image
 
 
@@ -419,3 +421,29 @@ def unpack_subimage_terraincell(image, MTS):
     )  # BL
 
     return output_image
+
+
+def main() -> int:
+    ap = ArgumentParser()
+    sp = ap.add_subparsers()
+
+    cmd = sp.add_parser("scale")
+    cmd.add_argument("input_filename", nargs="+")
+    cmd.add_argument("--factor", type=float, required=True, help="The factor to scale by (e.g., 2 for 2x)")
+    cmd.set_defaults(cmd=cmd_scale)
+
+    ns = ap.parse_args()
+    if 'cmd' not in ns:
+        ap.print_help()
+        return 2
+    return ns.cmd(ns)
+
+
+def cmd_scale(ns: Any) -> int:
+    for input_filename in ns.input_filename:
+        upscale_file(input_filename, ns.factor)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
