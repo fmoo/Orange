@@ -1,11 +1,6 @@
 #!/bin/bash
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 pushd $SCRIPTPATH/src
-pyinstaller -F pack-minitile-a2.py && cp dist/pack-minitile-a2.exe ../
-pyinstaller -F unpack-minitile-a2.py && cp dist/unpack-minitile-a2.exe ../
-pyinstaller -F unpack-minitile-a2-gms16.py && cp dist/unpack-minitile-a2-gms16.exe ../
-pyinstaller -F unpack-minitile-a4.py && cp dist/unpack-minitile-a4.exe ../
-pyinstaller -F unpack-minitile-a4-gms16.py && cp dist/unpack-minitile-a4-gms16.exe ../
 pyinstaller -F minitile.py && cp dist/minitile.exe ../
 rm -rfv ./__pycache__ *.spec build dist
 cd ..

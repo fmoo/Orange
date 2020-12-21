@@ -75,7 +75,7 @@ def unpack_file_a4_gms16(input_filename, MTS=8):
     p1, p2 = os.path.splitext(input_filename)
     output_filename = p1 + "_expanded-gms16" + p2
     input_image = Image.open(input_filename)
-    output_image = unpack_image_a4(input_image, MTS, for_gm=True)
+    output_image = unpack_image_a4(input_image, MTS)
     output_image = flatten_tiled_file_to_gm16(output_image, MTS, zigzag=True)
     output_image.save(output_filename)
 
@@ -107,8 +107,6 @@ def flatten_tiled_file_to_gm16(input_image, MTS=8, zigzag=False):
                 converted = flatten_tiled_subimage_to_gm16(input_subimage)
                 output_image.paste(converted, (0, nn * 2 * MTS))
                 nn += 1
-
-            
 
     return output_image
 
@@ -155,7 +153,7 @@ def flatten_tiled_subimage_to_gm16(image, MTS=8):
     return output_image
 
 
-def unpack_image_a4(input_image, MTS=8, for_gm=False) -> Image.Image:
+def unpack_image_a4(input_image, MTS=8) -> Image.Image:
     imw, imh = input_image.size
     INW, INH = (MTS * 4, MTS * 10)
     OUTW, OUTH = (MTS * 10, MTS * 12)
@@ -429,11 +427,46 @@ def main() -> int:
 
     cmd = sp.add_parser("scale")
     cmd.add_argument("input_filename", nargs="+")
-    cmd.add_argument("--factor", type=float, required=True, help="The factor to scale by (e.g., 2 for 2x)")
+    cmd.add_argument(
+        "--factor",
+        type=float,
+        required=True,
+        help="the factor to scale by (e.g., 2 for 2x)",
+    )
     cmd.set_defaults(cmd=cmd_scale)
 
+    cmd = sp.add_parser("unpack")
+    cmd.add_argument("format", choices=["a2", "a4"])
+    cmd.add_argument("input_filename", nargs="+")
+    cmd.add_argument(
+        "--gms",
+        choices=[16],
+        type=int,
+        help="export to GMS format (only 16 supported for now)",
+    )
+    cmd.add_argument(
+        "--mts",
+        "--minitile-size",
+        type=int,
+        default=8,
+        help="The size of the minitile.  8 for 16px tiles.",
+    )
+    cmd.set_defaults(cmd=cmd_unpack)
+
+    cmd = sp.add_parser("pack")
+    cmd.add_argument("format", choices=["a2"])
+    cmd.add_argument("input_filename", nargs="+")
+    cmd.add_argument(
+        "--mts",
+        "--minitile-size",
+        type=int,
+        default=8,
+        help="The size of the minitile.  8 for 16px tiles.",
+    )
+    cmd.set_defaults(cmd=cmd_pack)
+
     ns = ap.parse_args()
-    if 'cmd' not in ns:
+    if "cmd" not in ns:
         ap.print_help()
         return 2
     return ns.cmd(ns)
@@ -442,6 +475,30 @@ def main() -> int:
 def cmd_scale(ns: Any) -> int:
     for input_filename in ns.input_filename:
         upscale_file(input_filename, ns.factor)
+    return 0
+
+
+def cmd_unpack(ns: Any) -> int:
+    unpack_func = unpack_image_a2 if ns.format == "a2" else unpack_image_a4
+    suffix = "_expanded-gms16" if ns.gms == 16 else "_expanded"
+    for input_filename in ns.input_filename:
+        p1, p2 = os.path.splitext(input_filename)
+        output_filename = p1 + suffix + p2
+
+        input_image = Image.open(input_filename)
+        output_image = unpack_func(input_image, MTS=ns.mts)
+        if ns.gms is not None:
+            output_image = flatten_tiled_file_to_gm16(
+                output_image, MTS=ns.mts, zigzag=(ns.format == "a4")
+            )
+        output_image.save(output_filename)
+
+    return 0
+
+
+def cmd_pack(ns: Any) -> int:
+    for input_filename in ns.input_filename:
+        pack_file(input_filename, MTS=ns.mts)
     return 0
 
 
