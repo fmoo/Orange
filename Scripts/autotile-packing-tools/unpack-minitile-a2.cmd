@@ -1,1 +1,1 @@
-@minitile.exe unpack a2 %*
+@%~dp0\minitile.exe unpack a2 %*

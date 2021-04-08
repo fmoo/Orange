@@ -1,1 +1,1 @@
-@minitile.exe unpack a4 --gms 16 %*
+@%~dp0\minitile.exe unpack a4 --gms 16 %*
