@@ -1,1 +1,1 @@
-@%~dp0\minitile.exe scale --factor=3 %*
+@"%~dp0\minitile.exe" scale --factor=3 %*

@@ -1,1 +1,1 @@
-@%~dp0\minitile.exe pack a2 %*
+@"%~dp0\minitile.exe" pack a2 %*
