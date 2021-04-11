@@ -46,40 +46,6 @@ def pack_file(input_filename, MTS=8):
     output_image.save(output_filename)
 
 
-def unpack_file_a2(input_filename, MTS=8):
-    p1, p2 = os.path.splitext(input_filename)
-    output_filename = p1 + "_expanded" + p2
-    input_image = Image.open(input_filename)
-    output_image = unpack_image_a2(input_image, MTS)
-    output_image.save(output_filename)
-
-
-def unpack_file_a4(input_filename, MTS=8):
-    p1, p2 = os.path.splitext(input_filename)
-    output_filename = p1 + "_expanded" + p2
-    input_image = Image.open(input_filename)
-    output_image = unpack_image_a4(input_image, MTS)
-    output_image.save(output_filename)
-
-
-def unpack_file_gms16(input_filename, MTS=8):
-    p1, p2 = os.path.splitext(input_filename)
-    output_filename = p1 + "_expanded-gms16" + p2
-    input_image = Image.open(input_filename)
-    output_image = unpack_image_a2(input_image, MTS)
-    output_image = flatten_tiled_file_to_gm16(output_image, MTS)
-    output_image.save(output_filename)
-
-
-def unpack_file_a4_gms16(input_filename, MTS=8):
-    p1, p2 = os.path.splitext(input_filename)
-    output_filename = p1 + "_expanded-gms16" + p2
-    input_image = Image.open(input_filename)
-    output_image = unpack_image_a4(input_image, MTS)
-    output_image = flatten_tiled_file_to_gm16(output_image, MTS, zigzag=True)
-    output_image.save(output_filename)
-
-
 def flatten_tiled_file_to_gm16(input_image, MTS=8, zigzag=False):
     imw, imh = input_image.size
     nw, nh = int(imw / MTS / 2 / 5), int(imh / MTS / 2 / 3)
