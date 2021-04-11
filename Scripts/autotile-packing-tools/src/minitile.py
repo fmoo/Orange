@@ -46,6 +46,28 @@ def pack_file(input_filename, MTS=8):
     output_image.save(output_filename)
 
 
+def repack_tiled_a3_strip_outer_tiles(input_image, MTS=8):
+    imw, imh = input_image.size
+    INW, INH = (MTS * 10, MTS * 6)
+    OUTW, OUTH = (MTS * 6, MTS * 6)
+    rows, rwrem = divmod(imh, INH)
+    cols, clrem = divmod(imw, INW)
+    assert rwrem == 0, f"Invalid Height: ({imh})"
+    assert clrem == 0, f"Invalid Width: ({imw})"
+    outimw, outimh = cols * OUTW, rows * OUTH
+
+    output_image = Image.new("RGBA", (outimw, outimh))
+
+    for ii in range(rows):
+        for jj in range(cols):
+            subimage = input_image.crop(
+                (jj * INW, ii * INH, (jj * INW) + OUTW, (ii + 1) * INH)
+            )
+            output_image.paste(subimage, (jj * OUTW, ii * OUTH))
+
+    return output_image
+
+
 def flatten_tiled_file_to_gm16(input_image, MTS=8, zigzag=False):
     imw, imh = input_image.size
     nw, nh = int(imw / MTS / 2 / 5), int(imh / MTS / 2 / 3)
@@ -144,6 +166,26 @@ def unpack_image_a4(input_image, MTS=8) -> Image.Image:
             )
             converted = unpack_subimage_9cell(lateral_subimage, MTS)
             output_image.paste(converted, (jj * OUTW, ((ii * OUTH) + (MTS * 6))))
+    return output_image
+
+
+def unpack_image_a3(input_image, MTS=8) -> Image.Image:
+    imw, imh = input_image.size
+    INW, INH = (MTS * 4, MTS * 4)
+    OUTW, OUTH = (MTS * 10, MTS * 6)
+    rows, rwrem = divmod(imh, INH)
+    cols, clrem = divmod(imw, INW)
+    assert rwrem == 0, f"Invalid Height: ({imh})"
+    assert clrem == 0, f"Invalid Width: ({imw})"
+    outimw, outimh = cols * OUTW, rows * OUTH
+    output_image = Image.new("RGBA", (outimw, outimh))
+
+    for ii in range(rows):
+        for jj in range(cols):
+            terrain_subimage = input_image.crop(
+                (jj * INW, ii * INH, (jj + 1) * INW, (ii + 1) * INH))
+            converted = unpack_subimage_9cell(terrain_subimage, MTS)
+            output_image.paste(converted, (jj * OUTW, ii * OUTH))
     return output_image
 
 
@@ -402,7 +444,7 @@ def main() -> int:
     cmd.set_defaults(cmd=cmd_scale)
 
     cmd = sp.add_parser("unpack")
-    cmd.add_argument("format", choices=["a2", "a4"])
+    cmd.add_argument("format", choices=["a2", "a3", "a4"])
     cmd.add_argument("input_filename", nargs="+")
     cmd.add_argument(
         "--gms",
@@ -445,7 +487,15 @@ def cmd_scale(ns: Any) -> int:
 
 
 def cmd_unpack(ns: Any) -> int:
-    unpack_func = unpack_image_a2 if ns.format == "a2" else unpack_image_a4
+    if ns.format == "a2":
+        unpack_func = unpack_image_a2
+    elif ns.format == "a3":
+        unpack_func = unpack_image_a3
+    elif ns.format == "a4":
+        unpack_func = unpack_image_a4
+    else:
+        assert False, f'Unknown format {ns.format}'
+
     suffix = "_expanded-gms16" if ns.gms == 16 else "_expanded"
     for input_filename in ns.input_filename:
         p1, p2 = os.path.splitext(input_filename)
@@ -457,6 +507,12 @@ def cmd_unpack(ns: Any) -> int:
             output_image = flatten_tiled_file_to_gm16(
                 output_image, MTS=ns.mts, zigzag=(ns.format == "a4")
             )
+        elif ns.format == "a3":
+            # For A3 in tiled format, there are a bunch of unnecessary extra
+            # center tiles as filler "outer" tiles.
+            output_image = repack_tiled_a3_strip_outer_tiles(output_image, MTS=ns.mts)
+            pass
+
         output_image.save(output_filename)
 
     return 0
