@@ -5,9 +5,9 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using Boo.Lang;
 using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace RoboRyanTron.SearchableEnum.Editor
 {

@@ -246,6 +246,29 @@ public static class DirectionsUtils {
         }
     }
 
+    public static string ToDirectionString(this Directions8 d) {
+        switch (d) {
+            case Directions8.DOWN:
+                return "down";
+            case Directions8.DOWNLEFT:
+                return "downleft";
+            case Directions8.LEFT:
+                return "left";
+            case Directions8.UPLEFT:
+                return "upleft";
+            case Directions8.UP:
+                return "up";
+            case Directions8.UPRIGHT:
+                return "upright";
+            case Directions8.RIGHT:
+                return "right";
+            case Directions8.DOWNRIGHT:
+                return "downright";
+            default:
+                return "up";
+        }
+    }
+
     public static Directions4 Inverse(this Directions4 d) {
         if (d == Directions4.UP) {
             return Directions4.DOWN;

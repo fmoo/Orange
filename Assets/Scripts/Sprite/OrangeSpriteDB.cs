@@ -59,6 +59,11 @@ public class OrangeSpriteDB : ScriptableObject {
     }
 #endif
 
+    public void RemovePrefix(string prefix) {
+        sprites = sprites.Where(s => !s.name.StartsWith($"{prefix}_")).ToList();
+        animations = animations.Where(s => !s.name.Equals(prefix)).ToList();
+    }
+
     [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
     public Sprite[] importSprites;
     [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
@@ -69,6 +74,8 @@ public class OrangeSpriteDB : ScriptableObject {
     public bool flipImportedSprites = false;
     [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
     public bool loopImportedAnimation = true;
+    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    public float importTimePerFrame = 0.1f;
     [NaughtyAttributes.Button("Import Sprites")]
     public void DoImportSprites() {
         int ii = 0;
@@ -88,7 +95,7 @@ public class OrangeSpriteDB : ScriptableObject {
             animations.Add(new OrangeSpriteManagerAnimation() {
                 name = importAnimName,
                 config = config,
-                duration = (1f / 60f) * importSprites.Count() * 2f,
+                duration = importTimePerFrame * importSprites.Count(),
                 loop = loopImportedAnimation
             });
         }
