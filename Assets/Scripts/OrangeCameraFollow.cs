@@ -116,6 +116,10 @@ public class OrangeCameraFollow : MonoBehaviour {
         }
     }
 
+    public void ClampTo(Grid grid) {
+        ClampTo(grid.GetTilemapsBounds());
+    }
+
     public void DisableClamping() {
         enableClamping = false;
     }
