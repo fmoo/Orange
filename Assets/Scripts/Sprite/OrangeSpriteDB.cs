@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using NaughtyAttributes;
 
 [CreateAssetMenu(fileName = "SpritesDB", menuName = "Data/Sprite DB", order = 3)]
 public class OrangeSpriteDB : ScriptableObject {
@@ -64,19 +65,19 @@ public class OrangeSpriteDB : ScriptableObject {
         animations = animations.Where(s => !s.name.Equals(prefix)).ToList();
     }
 
-    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    [BoxGroup("Sprite Import Configuration")]
     public Sprite[] importSprites;
-    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    [BoxGroup("Sprite Import Configuration")]
     public string importAnimName;
-    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    [BoxGroup("Sprite Import Configuration")]
     public bool renameImportedSprites = true;
-    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    [BoxGroup("Sprite Import Configuration")]
     public bool flipImportedSprites = false;
-    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    [BoxGroup("Sprite Import Configuration")]
     public bool loopImportedAnimation = true;
-    [NaughtyAttributes.BoxGroup("Sprite Import Configuration")]
+    [BoxGroup("Sprite Import Configuration")]
     public float importTimePerFrame = 0.1f;
-    [NaughtyAttributes.Button("Import Sprites")]
+    [Button("Import Sprites")]
     public void DoImportSprites() {
         int ii = 0;
         var addedList = new List<string>();
@@ -104,7 +105,7 @@ public class OrangeSpriteDB : ScriptableObject {
         renameImportedSprites = true;
         flipImportedSprites = false;
     }
-    [NaughtyAttributes.Button("CLEAR ALL")]
+    [Button("CLEAR ALL")]
     public void Clear() {
         sprites.Clear();
         animations.Clear();
