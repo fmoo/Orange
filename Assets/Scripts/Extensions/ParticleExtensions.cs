@@ -22,7 +22,7 @@ public static class ParticleExtensions {
             throw new UnityException("WaitForDone called on looping Particle System!");
         }
         while (!ps.GetIsDone()) {
-            yield return WaitFor.Seconds(0.1f);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
