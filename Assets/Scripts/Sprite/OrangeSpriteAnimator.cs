@@ -13,7 +13,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     public System.Action onAnimationDone;
     public bool resetTimeOnChange = true;
 
-    private OrangeSpriteManagerAnimation animator;
+    private OrangeSpriteManagerAnimation currentAnimation;
     private float timeElapsed = 0f;
     private float stallTime = 0f;
 
@@ -27,17 +27,19 @@ public class OrangeSpriteAnimator : MonoBehaviour {
 
     public void SetAnimation(string animationName) {
         enabled = true;
-        animator = sprites.GetAnimation(animationName);
+        currentAnimation = sprites.GetAnimation(animationName);
         if (animationName == this.animationName) return;
-        onAnimationDone?.Invoke();
+        var lastDone = onAnimationDone;
         onAnimationDone = null;
-        if (resetTimeOnChange)
+        lastDone?.Invoke();
+        if (resetTimeOnChange || !currentAnimation.loop) {
             timeElapsed = 0f;
+        }
         stallTime = 0f;
         this.animationName = animationName;
-        if (animator == null)
+        if (currentAnimation == null)
             Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}");
-        var sprite = animator.GetSpriteForIndex(0);
+        var sprite = currentAnimation.GetSpriteForIndex(0);
         if (sprite != null)
             SetSprite(sprite);
     }
@@ -111,10 +113,10 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         if (!active) {
             return;
         }
-        if (animator is null) {
+        if (currentAnimation is null) {
             SetAnimation(animationName);
-            if (animator is null) {
-                Debug.LogError($"Animator is not set for {animationName} on {name}");
+            if (currentAnimation is null) {
+                Debug.LogError($"Animation was not found for {animationName} on {name}", this);
             }
         }
         float remainingTime = Time.deltaTime * playbackSpeed;
@@ -128,19 +130,20 @@ public class OrangeSpriteAnimator : MonoBehaviour {
             }
         }
         timeElapsed += remainingTime;
-        var sprite = animator.GetSpriteForTime(timeElapsed);
+        var sprite = currentAnimation.GetSpriteForTime(timeElapsed);
 
         if (sprite != null) {
             SetSprite(sprite);
         }
 
         if (sprite == null) {
-            if (animator.loop == false) {
-                onAnimationDone?.Invoke();
+            if (currentAnimation.loop == false) {
+                var lastAnimationDone = onAnimationDone;
                 onAnimationDone = null;
+                lastAnimationDone?.Invoke();
             }
             if (destroyOnDone) {
-                if (animator.loop == true) {
+                if (currentAnimation.loop == true) {
                     Debug.LogError($"Null sprite returned for looping animation! {this}");
                     return;
                 }
@@ -150,12 +153,12 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     }
 
     public IEnumerator WaitForDone() {
-        if (animator == null) Start();
-        if (animator.loop) {
-            Debug.LogError($"{name}'s .WaitForDone() called for looping animation '{animator.name}'!");
+        if (currentAnimation == null) Start();
+        if (currentAnimation.loop) {
+            Debug.LogError($"{name}'s .WaitForDone() called for looping animation '{currentAnimation.name}'!");
             yield break;
         }
-        var timeToSleep = animator.duration - timeElapsed;
+        var timeToSleep = currentAnimation.duration - timeElapsed;
         if (timeToSleep <= 0f) yield break;
         yield return new WaitForSeconds(timeToSleep);
         // TODO: Handle stalls!!
