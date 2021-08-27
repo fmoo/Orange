@@ -22,14 +22,14 @@ public static class GridExtensions {
             if (first == true) {
                 rect.xMin = cellBounds.xMin;
                 rect.xMax = cellBounds.xMax;
-                rect.yMin = cellBounds.yMin;
-                rect.yMax = cellBounds.yMax;
+                rect.yMin = cellBounds.yMin - 1;
+                rect.yMax = cellBounds.yMax - 1;
                 first = false;
             } else {
                 rect.xMin = Mathf.Min(rect.xMin, cellBounds.xMin);
                 rect.xMax = Mathf.Max(rect.xMax, cellBounds.xMax);
-                rect.yMin = Mathf.Min(rect.yMin, cellBounds.yMin);
-                rect.yMax = Mathf.Max(rect.yMax, cellBounds.yMax);
+                rect.yMin = Mathf.Min(rect.yMin, cellBounds.yMin - 1);
+                rect.yMax = Mathf.Max(rect.yMax, cellBounds.yMax - 1);
             }
         }
         return rect;
