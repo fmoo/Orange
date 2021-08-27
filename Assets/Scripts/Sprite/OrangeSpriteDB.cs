@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using NaughtyAttributes;
+using SuperTiled2Unity;
 
 [CreateAssetMenu(fileName = "SpritesDB", menuName = "Data/Sprite DB", order = 3)]
 public class OrangeSpriteDB : ScriptableObject {
@@ -48,6 +49,73 @@ public class OrangeSpriteDB : ScriptableObject {
     }
 
 #if UNITY_EDITOR
+    public void EditorSetSprite(string name, Sprite sprite, bool flip = false) {
+        bool found = false;
+        foreach (var entry in sprites) {
+            if (entry.name == name) {
+                entry.sprite = sprite;
+                entry.flip = flip;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            sprites.Add(
+                new OrangeSpriteManagerSprite() {
+                    name = name,
+                    sprite = sprite,
+                    flip = flip
+                }
+            );
+        }
+    }
+
+    public void EditorSetAnimation(
+        string name,
+        Sprite[] sprites,
+        float duration,
+        bool flip,
+        bool loop,
+        bool reverse
+    ) {
+        var seenSprites = new Dictionary<Sprite, string>();
+        var spriteNames = new List<string>();
+        foreach (var sprite in sprites) {
+            if (seenSprites.ContainsKey(sprite)) {
+                spriteNames.Add(seenSprites[sprite]);
+                continue;
+            }
+
+            var spriteName = $"{name}_{seenSprites.Count}";
+            seenSprites[sprite] = spriteName;
+            EditorSetSprite(spriteName, sprite, flip: flip);
+            spriteNames.Add(spriteName);
+        }
+
+        bool found = false;
+        foreach (var entry in animations) {
+            if (entry.name == name) {
+                entry.duration = duration;
+                entry.config = string.Join(",", spriteNames);
+                entry.loop = loop;
+                entry.reverse = reverse;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            animations.Add(
+                new OrangeSpriteManagerAnimation() {
+                    name = name,
+                    duration = duration,
+                    config = string.Join(",", spriteNames),
+                    loop = loop,
+                    reverse = reverse,
+                }
+            );
+        }
+    }
+
     public static NaughtyAttributes.DropdownList<string> GetEditorSpriteDropdown(OrangeSpriteDB db) {
         var result = new NaughtyAttributes.DropdownList<string>();
         if (db == null) return null;
@@ -109,7 +177,28 @@ public class OrangeSpriteDB : ScriptableObject {
     public void Clear() {
         sprites.Clear();
         animations.Clear();
-        importSprites = new Sprite[] {};
+        importSprites = new Sprite[] { };
     }
+
+
+#if UNITY_EDITOR
+    [System.Serializable]
+    public class TiledAutosyncFlip {
+        public string match;
+        public string replace;
+    }
+
+    [BoxGroup("Tiled Autosync Config")]
+    public List<TiledAutosyncFlip> autosyncTiledTilesetFlips;
+    [Button("Reimport From TSX")]
+    void EditorReimportFromTsx() {
+        var assetPath = UnityEditor.AssetDatabase.GetAssetPath(this);
+        UnityEditor.AssetDatabase.ImportAsset(assetPath.Replace(".asset", ".tsx"));
+    }
+
+
+#endif
+
+
 
 }
