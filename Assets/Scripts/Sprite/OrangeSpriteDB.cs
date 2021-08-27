@@ -150,7 +150,7 @@ public class OrangeSpriteDB : ScriptableObject {
         int ii = 0;
         var addedList = new List<string>();
         foreach (var sprite in importSprites) {
-            var name = !renameImportedSprites ? sprite.name : $"{importAnimName}{ii}";
+            var name = !renameImportedSprites ? sprite.name : $"{importAnimName}_{ii}";
             addedList.Add(name);
             sprites.Add(new OrangeSpriteManagerSprite() {
                 sprite = sprite,
