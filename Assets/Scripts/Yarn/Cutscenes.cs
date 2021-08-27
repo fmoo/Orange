@@ -51,7 +51,7 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         });
     }
 
-    public void StartScript(string sceneName, System.Action onDone = null, bool runInBackground = false) {
+    public void StartScript(string sceneName, System.Action onDone = null, bool runInBackground = false, Dictionary<string, object> context = null) {
         var (runner, didCreate) = ClaimRunner();
         runner.startAutomatically = didCreate;
         runner.startNode = didCreate ? sceneName : "";
@@ -63,10 +63,29 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         dialogueDoneCallbacks[runner] = onDone;
         // If this is a new runner we *have* to wait for Start() to finish initialization
         if (!didCreate) {
+            SetRunnerContext(runner, context);
             runner.StartDialogue(sceneName);
         }
-
         // TODO: Return disposable / suspendable wrapper object.
+    }
+
+    void SetRunnerContext(DialogueRunner runner, Dictionary<string, object> context) {
+        if (context == null) return;
+        var scopedVariables = runner.GetComponent<ScopedVariableStore>();
+        foreach (var kv in context) {
+            if (kv.Value.GetType() == typeof(int)) {
+                scopedVariables.scopedData.SetValue($"$_{kv.Key}", (int)kv.Value);
+            } else if (kv.Value.GetType() == typeof(float)) {
+                scopedVariables.scopedData.SetValue($"$_{kv.Key}", (float)kv.Value);
+            } else if (kv.Value.GetType() == typeof(bool)) {
+                scopedVariables.scopedData.SetValue($"$_{kv.Key}", (bool)kv.Value);
+            } else if (kv.Value.GetType() == typeof(string)) {
+                scopedVariables.scopedData.SetValue($"$_{kv.Key}", (string)kv.Value);
+            } else {
+                // TODO: Handle null?
+                Debug.LogError($"Invalid Type {kv.Value.GetType().ToString()} for key {kv.Key}!", runner);
+            }
+        }
     }
 
     (DialogueRunner, bool didCreate) ClaimRunner() {
