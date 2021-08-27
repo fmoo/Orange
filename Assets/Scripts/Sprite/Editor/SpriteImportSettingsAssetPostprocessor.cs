@@ -3,6 +3,7 @@ using UnityEngine;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
     void OnPreprocessTexture() {
@@ -39,6 +40,8 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
     }
 
     static void OnPostprocessSpritesReal(string texturePath, Texture2D texture, Sprite[] sprites) {
+        Regex digitPart = new Regex(@"\d+$", RegexOptions.Compiled);
+        sprites = sprites.OrderBy(x => int.Parse(digitPart.Match(x.name).Value)).ToArray();
 
         // Debug.LogError($"Postprocessing {texture.name} with {sprites.Length} sprites...");
 
@@ -58,6 +61,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
             // Debug.Log($"Importing {syncAsset.importName} with {sprites.Length} sprites.");
 
             foreach (var group in groups) {
+                // TODO: Don't pull in duplicates if index is referenced multiple times.
                 var importSprites = syncAsset.frameOffsets.Split(',').Select(s => int.Parse(s)).Select(ii => sprites[ii + syncAsset.baseIndex + group.baseOffset]);
                 var importName = $"{group.prefix}{syncAsset.importName}{group.suffix}";
                 importSettings.spriteDB.RemovePrefix(importName);
