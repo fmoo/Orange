@@ -85,9 +85,9 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
             var oldThumbnailTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(thumbnailAssetPath);
             var oldThumbnailTextureDefault = AssetDatabase.LoadAssetAtPath<DefaultAsset>(thumbnailAssetPath);
 
-            var thumbnailSprite = importSettings.spriteDB.GetSprite(importSettings.autoCropThumbnailFrame)?.sprite;
+            var thumbnailSprite = importSettings.spriteDB.sprites.FirstOrDefault(s => s.name == importSettings.autoCropThumbnailFrame)?.sprite;
             if (thumbnailSprite == null) {
-                Debug.LogWarning($"No thumbnail asset found for {importSettings.autoCropThumbnailFrame}", importSettings.spriteDB);
+                Debug.LogWarning($"No thumbnail asset found for '{importSettings.autoCropThumbnailFrame}'", importSettings.spriteDB);
                 return;
             }
 
