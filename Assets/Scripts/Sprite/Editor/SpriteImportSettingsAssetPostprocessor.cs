@@ -42,14 +42,15 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
     }
 
     static void OnPostprocessSpritesReal(string texturePath, Texture2D texture, Sprite[] sprites) {
-        Regex digitPart = new Regex(@"\d+$", RegexOptions.Compiled);
-        sprites = sprites.OrderBy(x => int.Parse(digitPart.Match(x.name).Value)).ToArray();
 
         // Debug.LogError($"Postprocessing {texture.name} with {sprites.Length} sprites...");
 
         var importSettings = GetImportSettingsForPath(texturePath);
         if (importSettings == null) return;
         if (importSettings.spriteDB == null || importSettings.syncAssets.Count == 0) return;
+
+        Regex digitPart = new Regex(@"\d+$", RegexOptions.Compiled);
+        sprites = sprites.OrderBy(x => int.Parse(digitPart.Match(x.name).Value)).ToArray();
 
         foreach (var syncAsset in importSettings.syncAssets) {
 
