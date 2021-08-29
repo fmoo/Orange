@@ -13,8 +13,10 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
             if (importSettings == null) return;
 
             textureImporter.spritePixelsPerUnit = importSettings.spritePixelsPerUnit;
+            textureImporter.wrapMode = importSettings.wrapMode;
             textureImporter.filterMode = importSettings.filterMode;
             textureImporter.maxTextureSize = importSettings.maxTextureSize;
+            textureImporter.isReadable = importSettings.readWriteFromScript;
         }
     }
 

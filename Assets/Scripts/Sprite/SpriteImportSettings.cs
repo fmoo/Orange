@@ -9,7 +9,9 @@ public class SpriteImportSettings : ScriptableObject {
 
     public int spritePixelsPerUnit = 16;
     public FilterMode filterMode = FilterMode.Point;
+    public TextureWrapMode wrapMode = TextureWrapMode.Clamp;
     public int maxTextureSize = 2048;
+    public bool readWriteFromScript;
 
     [System.Serializable]
     public class SpriteDBBatchReference {
