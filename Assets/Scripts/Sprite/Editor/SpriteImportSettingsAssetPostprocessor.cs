@@ -51,6 +51,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
 
         Regex digitPart = new Regex(@"\d+$", RegexOptions.Compiled);
         sprites = sprites.OrderBy(x => int.Parse(digitPart.Match(x.name).Value)).ToArray();
+        bool doReimportThumbnail = false;
 
         foreach (var syncAsset in importSettings.syncAssets) {
 
@@ -68,17 +69,22 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                 var importSprites = syncAsset.frameOffsets.Split(',').Select(s => int.Parse(s)).Select(ii => sprites[ii + syncAsset.baseIndex + group.baseOffset]);
                 var importName = $"{group.prefix}{syncAsset.importName}{group.suffix}";
                 importSettings.spriteDB.RemovePrefix(importName);
+                bool didHaveSprite = importSettings.spriteDB.sprites.FirstOrDefault(s => s.name == importSettings.autoCropThumbnailFrame) != null;
                 importSettings.spriteDB.importSprites = importSprites.ToArray();
                 importSettings.spriteDB.importTimePerFrame = syncAsset.timePerFrame;
                 importSettings.spriteDB.importAnimName = importName;
                 importSettings.spriteDB.loopImportedAnimation = syncAsset.loop;
                 importSettings.spriteDB.flipImportedSprites = syncAsset.flip;
                 importSettings.spriteDB.DoImportSprites();
+
+                if (!didHaveSprite && importSettings.spriteDB.sprites.FirstOrDefault(s => s.name == importSettings.autoCropThumbnailFrame) != null) {
+                    doReimportThumbnail = true;
+                }
             }
 
         }
 
-        if (!string.IsNullOrWhiteSpace(importSettings.autoCropThumbnailFrame) && importSettings.spriteDB != null) {
+        if (doReimportThumbnail && !string.IsNullOrWhiteSpace(importSettings.autoCropThumbnailFrame) && importSettings.spriteDB != null) {
             var spriteDBAssetPath = AssetDatabase.GetAssetPath(importSettings.spriteDB);
             var thumbnailAssetPath = spriteDBAssetPath.Substring(0, spriteDBAssetPath.Length - 5) + "png";
 
