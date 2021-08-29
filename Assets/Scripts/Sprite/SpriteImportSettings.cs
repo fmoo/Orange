@@ -21,7 +21,7 @@ public class SpriteImportSettings : ScriptableObject {
         public string frameOffsets;
         public bool loop;
         public bool flip;
-        public float timePerFrame;
+        public float timePerFrame = 0.08f;
 
         public List<SpriteDBBatchGroup> groups;
     }
