@@ -78,6 +78,43 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
 
         }
 
+        if (!string.IsNullOrWhiteSpace(importSettings.autoCropThumbnailFrame) && importSettings.spriteDB != null) {
+            var spriteDBAssetPath = AssetDatabase.GetAssetPath(importSettings.spriteDB);
+            var thumbnailAssetPath = spriteDBAssetPath.Substring(0, spriteDBAssetPath.Length - 5) + "png";
+
+            var oldThumbnailTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(thumbnailAssetPath);
+            var oldThumbnailTextureDefault = AssetDatabase.LoadAssetAtPath<DefaultAsset>(thumbnailAssetPath);
+
+            var thumbnailSprite = importSettings.spriteDB.GetSprite(importSettings.autoCropThumbnailFrame)?.sprite;
+            if (thumbnailSprite == null) {
+                Debug.LogWarning($"No thumbnail asset found for {importSettings.autoCropThumbnailFrame}", importSettings.spriteDB);
+                return;
+            }
+
+            var oldPixels = oldThumbnailTexture == null ? null : oldThumbnailTexture.GetPixels(0, 0, oldThumbnailTexture.width, oldThumbnailTexture.height);
+
+            var pixels = thumbnailSprite.texture.GetPixels(
+                (int)thumbnailSprite.textureRect.x,
+                (int)thumbnailSprite.textureRect.y,
+                (int)thumbnailSprite.textureRect.width,
+                (int)thumbnailSprite.textureRect.height);
+            if (oldThumbnailTexture == null || !ArrayUtility.Equals(oldPixels, pixels)) {
+                var thumbnailTexture = new Texture2D((int)thumbnailSprite.textureRect.width, (int)thumbnailSprite.textureRect.height);
+                thumbnailTexture.SetPixels(pixels);
+                thumbnailTexture.Apply();
+
+                if (oldThumbnailTextureDefault != null) {
+                    Debug.Log($"Deleting old {thumbnailAssetPath}");
+                    AssetDatabase.DeleteAsset(thumbnailAssetPath);
+                    AssetDatabase.SaveAssets();
+                }
+                Debug.Log($"Writing {thumbnailAssetPath}");
+                File.WriteAllBytes(thumbnailAssetPath, ImageConversion.EncodeToPNG(thumbnailTexture));
+                AssetDatabase.ImportAsset(thumbnailAssetPath);
+            }
+
+        }
+
 
         // Debug.Log($"OnPostprocessSprites {assetPath} {texture} {sprites} {assetImporter} {context}");
 

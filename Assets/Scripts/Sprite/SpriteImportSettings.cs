@@ -33,6 +33,7 @@ public class SpriteImportSettings : ScriptableObject {
         public int baseOffset;
     }
 
+    public string autoCropThumbnailFrame;
     public OrangeSpriteDB spriteDB;
     public List<SpriteDBBatchReference> syncAssets;
 }
