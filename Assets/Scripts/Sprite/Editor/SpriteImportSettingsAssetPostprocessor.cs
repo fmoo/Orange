@@ -84,7 +84,11 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
         if (importSettings.spriteDB == null || importSettings.syncAssets.Count == 0) return;
 
         Regex digitPart = new Regex(@"\d+$", RegexOptions.Compiled);
-        sprites = sprites.OrderBy(x => int.Parse(digitPart.Match(x.name).Value)).ToArray();
+        try {
+            sprites = sprites.OrderBy(x => int.Parse(digitPart.Match(x.name).Value)).ToArray();
+        } catch (System.FormatException e) {
+            Debug.LogWarning("sprites did not contain _# numeric suffix.  Import may fail.");
+        }
         bool doReimportThumbnail = false;
 
         foreach (var syncAsset in importSettings.syncAssets) {
