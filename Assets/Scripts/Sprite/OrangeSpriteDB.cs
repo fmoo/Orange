@@ -17,13 +17,22 @@ public class OrangeSpriteDB : ScriptableObject {
         new Dictionary<string, OrangeSpriteManagerAnimation>();
 
     public OrangeSpriteManagerSprite GetSprite(string name) {
+        if (!Application.isPlaying) {
+            return sprites.FirstOrDefault(s => s.name == name);
+        }
+
         if (namedSprites.Count == 0) BuildIndex();
         if (namedSprites.TryGetValue(name, out OrangeSpriteManagerSprite result)) {
             return result;
         }
         return null;
     }
+
     public OrangeSpriteManagerAnimation GetAnimation(string name) {
+        if (!Application.isPlaying) {
+            return animations.FirstOrDefault(s => s.name == name);
+        }
+
         if (namedAnimations.Count == 0) BuildIndex();
         if (namedAnimations.TryGetValue(name, out OrangeSpriteManagerAnimation result)) {
             return result;
@@ -38,6 +47,7 @@ public class OrangeSpriteDB : ScriptableObject {
         BuildIndex();
     }
     private void BuildIndex() {
+        if (!Application.isPlaying) return;
         foreach (var s in sprites) {
             if (s.name == "" || s.sprite == null) continue;
             namedSprites[s.name] = s;
