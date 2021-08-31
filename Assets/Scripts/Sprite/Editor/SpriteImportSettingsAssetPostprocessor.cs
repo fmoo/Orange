@@ -12,6 +12,40 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
             var importSettings = GetImportSettings();
             if (importSettings == null) return;
 
+            TextureImporterSettings texSettings = new TextureImporterSettings();
+            textureImporter.ReadTextureSettings(texSettings);
+
+            texSettings.spritePixelsPerUnit = importSettings.spritePixelsPerUnit;
+            texSettings.wrapMode = importSettings.wrapMode;
+            texSettings.filterMode = importSettings.filterMode;
+
+            if (importSettings.setPivot) {
+                // if (importSettings.pivot.x == 1.0f && importSettings.pivot.y == 1.0f) {
+                if (importSettings.pivot.x == 0.0f && importSettings.pivot.y == 0.0f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.BottomLeft;
+                } else if (importSettings.pivot.x == 0.5f && importSettings.pivot.y == 0.0f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.BottomCenter;
+                } else if (importSettings.pivot.x == 1.0f && importSettings.pivot.y == 0.0f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.BottomRight;
+                } else if (importSettings.pivot.x == 0.0f && importSettings.pivot.y == 0.5f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.LeftCenter;
+                } else if (importSettings.pivot.x == 0.5f && importSettings.pivot.y == 0.5f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.Center;
+                } else if (importSettings.pivot.x == 1.0f && importSettings.pivot.y == 0.5f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.RightCenter;
+                } else if (importSettings.pivot.x == 0.0f && importSettings.pivot.y == 1.0f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.TopLeft;
+                } else if (importSettings.pivot.x == 0.5f && importSettings.pivot.y == 1.0f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.TopCenter;
+                } else if (importSettings.pivot.x == 1.0f && importSettings.pivot.y == 1.0f) {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.TopRight;
+                } else {
+                    texSettings.spriteAlignment = (int)SpriteAlignment.Custom;
+                    texSettings.spritePivot = importSettings.pivot;
+                }
+            }
+            textureImporter.SetTextureSettings(texSettings);
+
             textureImporter.spritePixelsPerUnit = importSettings.spritePixelsPerUnit;
             textureImporter.wrapMode = importSettings.wrapMode;
             textureImporter.filterMode = importSettings.filterMode;
