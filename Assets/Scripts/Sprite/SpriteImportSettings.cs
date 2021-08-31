@@ -24,6 +24,13 @@ public class SpriteImportSettings : ScriptableObject {
         public float timePerFrame = 0.08f;
 
         public List<SpriteDBBatchGroup> groups;
+        public List<ReplaceRule> replaceRules;
+    }
+
+    [System.Serializable]
+    public class ReplaceRule {
+        public string match;
+        public string replace;
     }
 
     [System.Serializable]

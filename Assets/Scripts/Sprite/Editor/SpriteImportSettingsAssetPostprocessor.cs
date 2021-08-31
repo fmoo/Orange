@@ -95,7 +95,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
 
             // TODO: only check textureMatch for Default.SIS?
             if (string.IsNullOrWhiteSpace(syncAsset.importName) || string.IsNullOrWhiteSpace(syncAsset.frameOffsets) || string.IsNullOrWhiteSpace(syncAsset.textureMatch)) return;
-            if (!texture.name.Contains(syncAsset.textureMatch)) continue;
+            if (!texture.name.Contains(syncAsset.textureMatch) && syncAsset.textureMatch != "*") continue;
 
             var groups = syncAsset.groups.ToList();
             if (groups.Count == 0) groups.Add(new SpriteImportSettings.SpriteDBBatchGroup());
@@ -105,15 +105,30 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
             foreach (var group in groups) {
                 // TODO: Don't pull in duplicates if index is referenced multiple times.
                 var importSprites = syncAsset.frameOffsets.Split(',').Select(s => int.Parse(s)).Select(ii => sprites[ii + syncAsset.baseIndex + group.baseOffset]);
-                var importName = $"{group.prefix}{syncAsset.importName}{group.suffix}";
-                importSettings.spriteDB.RemovePrefix(importName);
+                var importName = syncAsset.textureMatch == "*" ? texture.name : syncAsset.importName;
+                foreach (var replaceRule in syncAsset.replaceRules) {
+                    importName = importName.Replace(replaceRule.match, replaceRule.replace);
+                }
+
                 bool didHaveSprite = importSettings.spriteDB.sprites.FirstOrDefault(s => s.name == importSettings.autoCropThumbnailFrame) != null;
-                importSettings.spriteDB.importSprites = importSprites.ToArray();
-                importSettings.spriteDB.importTimePerFrame = syncAsset.timePerFrame;
-                importSettings.spriteDB.importAnimName = importName;
-                importSettings.spriteDB.loopImportedAnimation = syncAsset.loop;
-                importSettings.spriteDB.flipImportedSprites = syncAsset.flip;
-                importSettings.spriteDB.DoImportSprites();
+                importName = $"{group.prefix}{importName}{group.suffix}";
+                importSettings.spriteDB.RemovePrefix(importName);
+
+                if (syncAsset.textureMatch == "*" && importSprites.Count() == 1) {
+                    importSettings.spriteDB.sprites.Add(
+                        new OrangeSpriteManagerSprite() {
+                            name = importName,
+                            sprite = importSprites.First(),
+                        }
+                    );
+                } else {
+                    importSettings.spriteDB.importSprites = importSprites.ToArray();
+                    importSettings.spriteDB.importTimePerFrame = syncAsset.timePerFrame;
+                    importSettings.spriteDB.importAnimName = importName;
+                    importSettings.spriteDB.loopImportedAnimation = syncAsset.loop;
+                    importSettings.spriteDB.flipImportedSprites = syncAsset.flip;
+                    importSettings.spriteDB.DoImportSprites();
+                }
 
                 if (!didHaveSprite && importSettings.spriteDB.sprites.FirstOrDefault(s => s.name == importSettings.autoCropThumbnailFrame) != null) {
                     doReimportThumbnail = true;

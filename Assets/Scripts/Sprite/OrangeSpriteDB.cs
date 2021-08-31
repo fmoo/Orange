@@ -129,7 +129,7 @@ public class OrangeSpriteDB : ScriptableObject {
 #endif
 
     public void RemovePrefix(string prefix) {
-        sprites = sprites.Where(s => !s.name.StartsWith($"{prefix}_")).ToList();
+        sprites = sprites.Where(s => !s.name.StartsWith($"{prefix}_") && s.name != prefix).ToList();
         animations = animations.Where(s => !s.name.Equals(prefix)).ToList();
     }
 
