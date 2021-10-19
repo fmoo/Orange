@@ -86,8 +86,8 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
         Regex digitPart = new Regex(@"\d+$", RegexOptions.Compiled);
         try {
             sprites = sprites.OrderBy(x => int.Parse(digitPart.Match(x.name).Value)).ToArray();
-        } catch (System.FormatException e) {
-            Debug.LogWarning("sprites did not contain _# numeric suffix.  Import may fail.");
+        } catch (System.FormatException) {
+            Debug.LogWarning($"{texturePath} sprites did not contain _# numeric suffix.  Import may fail.");
         }
         bool doReimportThumbnail = false;
 
@@ -104,7 +104,13 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
 
             foreach (var group in groups) {
                 // TODO: Don't pull in duplicates if index is referenced multiple times.
-                var importSprites = syncAsset.frameOffsets.Split(',').Select(s => int.Parse(s)).Select(ii => sprites[ii + syncAsset.baseIndex + group.baseOffset]);
+                var importSprites = syncAsset.frameOffsets.Split(',').Select(s => int.Parse(s)).Select(ii => {
+                    int index = ii + syncAsset.baseIndex + group.baseOffset;
+                    if (index < 0 || index >= sprites.Length) {
+                        Debug.LogError($"Index {index} out of range when parsing frameOffset {ii} with baseIndex {syncAsset.baseIndex} and group offset {group.baseOffset} for {texturePath}", importSettings);
+                    }
+                    return sprites[index];
+                });
                 var importName = syncAsset.textureMatch == "*" ? texture.name : syncAsset.importName;
                 foreach (var replaceRule in syncAsset.replaceRules) {
                     importName = importName.Replace(replaceRule.match, replaceRule.replace);
