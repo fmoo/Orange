@@ -11,6 +11,10 @@ public static class TilemapExtensions {
         return tilemap.GetTile<T>(position.ToVector3Int());
     }
 
+    public static T GetTile<T>(this Tilemap tilemap, Vector3 position) where T : TileBase {
+        return tilemap.GetTile<T>(tilemap.WorldToCell(position));
+    }
+
     public static void SetTile(this Tilemap tilemap, Vector2Int position, TileBase tile) {
         tilemap.SetTile(position.ToVector3Int(), tile);
     }
