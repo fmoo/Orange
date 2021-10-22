@@ -155,7 +155,7 @@ public class OrangeSpriteDB : ScriptableObject {
     public bool loopImportedAnimation = true;
     [BoxGroup("Sprite Import Configuration")]
     public float importTimePerFrame = 0.1f;
-    [Button("Import Sprites")]
+    [NaughtyAttributes.Button("Import Sprites")]
     public void DoImportSprites() {
         int ii = 0;
         var addedList = new List<string>();
@@ -183,7 +183,7 @@ public class OrangeSpriteDB : ScriptableObject {
         renameImportedSprites = true;
         flipImportedSprites = false;
     }
-    [Button("CLEAR ALL")]
+    [NaughtyAttributes.Button("CLEAR ALL")]
     public void Clear() {
         sprites.Clear();
         animations.Clear();
@@ -198,9 +198,7 @@ public class OrangeSpriteDB : ScriptableObject {
         public string replace;
     }
 
-    [BoxGroup("Tiled Autosync Config")]
-    public List<TiledAutosyncFlip> autosyncTiledTilesetFlips;
-    [Button("Reimport From TSX")]
+    [NaughtyAttributes.Button("Reimport From TSX")]
     void EditorReimportFromTsx() {
         var assetPath = UnityEditor.AssetDatabase.GetAssetPath(this);
         UnityEditor.AssetDatabase.ImportAsset(assetPath.Replace(".asset", ".tsx"));
