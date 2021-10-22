@@ -14,6 +14,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     public bool resetTimeOnChange = true;
 
     private OrangeSpriteManagerAnimation currentAnimation;
+    private OrangeSpriteDB currentAnimationSprites;
     private float timeElapsed = 0f;
     private float stallTime = 0f;
 
@@ -28,18 +29,21 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     public void SetAnimation(string animationName) {
         enabled = true;
         currentAnimation = sprites.GetAnimation(animationName);
+        currentAnimationSprites = sprites;
         if (animationName == this.animationName) return;
         var lastDone = onAnimationDone;
         onAnimationDone = null;
         lastDone?.Invoke();
-        if (resetTimeOnChange || !currentAnimation.loop) {
+        if (resetTimeOnChange || !(currentAnimation?.loop ?? false)) {
             timeElapsed = 0f;
         }
         stallTime = 0f;
-        this.animationName = animationName;
+        this.animationName = currentAnimation != null ? animationName : "";
+        OrangeSpriteManagerSprite sprite = null;
         if (currentAnimation == null)
-            Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}", this);
-        var sprite = currentAnimation.GetSpriteForIndex(0);
+            Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}", (Object)sprites ?? this);
+        else
+            sprite = currentAnimation.GetSpriteForIndex(0);
         if (sprite != null)
             SetSprite(sprite);
     }
@@ -50,6 +54,9 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     }
 
     public void ResetAnimation() {
+        if (currentAnimation != null && currentAnimationSprites != sprites) {
+            ResetAnimation(currentAnimation.name);
+        }
         timeElapsed = 0f;
         stallTime = 0f;
     }
@@ -113,10 +120,10 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         if (!active) {
             return;
         }
-        if (currentAnimation is null) {
+        if (currentAnimation is null && animationName != "") {
             SetAnimation(animationName);
             if (currentAnimation is null) {
-                Debug.LogError($"Animation was not found for {animationName} on {name}", this);
+                Debug.LogError($"Animation '{animationName}' was not found on {name}", (Object)sprites ?? this);
             }
         }
         float remainingTime = Time.deltaTime * playbackSpeed;
@@ -130,20 +137,22 @@ public class OrangeSpriteAnimator : MonoBehaviour {
             }
         }
         timeElapsed += remainingTime;
-        var sprite = currentAnimation.GetSpriteForTime(timeElapsed);
+        OrangeSpriteManagerSprite sprite = null;
+        if (currentAnimation != null)
+            sprite = currentAnimation.GetSpriteForTime(timeElapsed);
 
         if (sprite != null) {
             SetSprite(sprite);
         }
 
         if (sprite == null) {
-            if (currentAnimation.loop == false) {
+            if ((currentAnimation?.loop ?? false) == false) {
                 var lastAnimationDone = onAnimationDone;
                 onAnimationDone = null;
                 lastAnimationDone?.Invoke();
             }
             if (destroyOnDone) {
-                if (currentAnimation.loop == true) {
+                if ((currentAnimation?.loop ?? false) == true) {
                     Debug.LogError($"Null sprite returned for looping animation!", this);
                     return;
                 }
@@ -162,5 +171,9 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         if (timeToSleep <= 0f) yield break;
         yield return new WaitForSeconds(timeToSleep);
         // TODO: Handle stalls!!
+    }
+
+    public void Refresh() {
+        ResetAnimation(animationName);
     }
 }
