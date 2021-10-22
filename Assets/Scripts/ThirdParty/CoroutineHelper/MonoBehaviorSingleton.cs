@@ -7,7 +7,7 @@ public class MonoBehaviourSingleton<TSelfType> : MonoBehaviour where TSelfType :
         }
     }
 
-    void Awake() {
+    virtual protected void Awake() {
         transform.parent = null;
         DontDestroyOnLoad(transform.gameObject);
     }
