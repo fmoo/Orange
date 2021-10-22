@@ -9,15 +9,33 @@ public class OrangeSpriteDBAssetPostprocessor : AssetPostprocessor {
 
     public static void ReimportTsxAssetPath(string assetPath) {
         SuperTileset tileset = AssetDatabase.LoadAssetAtPath<SuperTileset>(assetPath);
-        OrangeSpriteDB spriteDB = AssetDatabase.LoadAssetAtPath<OrangeSpriteDB>(assetPath.Replace(".tsx", ".asset"));
-        if (spriteDB == null) return;
+        string spriteDBAssetPath = assetPath.Replace(".tsx", ".asset");
+        OrangeSpriteDB spriteDB = AssetDatabase.LoadAssetAtPath<OrangeSpriteDB>(spriteDBAssetPath);
 
+        // Auto-create spriteDB if there are named sprites/animations in them.
+        if (spriteDB == null) {
+            bool shouldCreate = false;
+            foreach (var tile in tileset.m_Tiles) {
+                if (tile.m_CustomProperties.Find(p => p.m_Name == "spriteName") != null || tile.m_CustomProperties.Find(p => p.m_Name == "animationName") != null) {
+                    shouldCreate = true;
+                    break;
+                }
+            }
+            if (!shouldCreate) return;
+
+            // Create the spriteDB
+            spriteDB = ScriptableObject.CreateInstance<OrangeSpriteDB>();
+            AssetDatabase.CreateAsset(spriteDB, spriteDBAssetPath);
+        }
+
+        // Import named sprites (tiles with `spriteName`)
         foreach (var tile in tileset.m_Tiles) {
             var spriteName = tile.m_CustomProperties.Find(p => p.m_Name == "spriteName")?.m_Value;
             if (spriteName == null) continue;
             spriteDB.EditorSetSprite(spriteName, tile.m_Sprite);
         }
 
+        // Import named animation (tiles with `animationName`)
         foreach (var tile in tileset.m_Tiles) {
             var animationName = tile.m_CustomProperties.Find(p => p.m_Name == "animationName")?.m_Value;
             if (animationName == null) continue;
@@ -41,6 +59,7 @@ public class OrangeSpriteDBAssetPostprocessor : AssetPostprocessor {
             );
         }
 
+        // Import flipped named animations
         foreach (var tile in tileset.m_Tiles) {
             var animationName = tile.m_CustomProperties.Find(p => p.m_Name == "animationFlipName")?.m_Value;
             if (animationName == null) continue;
