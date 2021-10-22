@@ -134,6 +134,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                     importSettings.spriteDB.loopImportedAnimation = syncAsset.loop;
                     importSettings.spriteDB.flipImportedSprites = syncAsset.flip;
                     importSettings.spriteDB.DoImportSprites();
+                    EditorUtility.SetDirty(importSettings.spriteDB);
                 }
 
                 if (!didHaveSprite && importSettings.spriteDB.sprites.FirstOrDefault(s => s.name == importSettings.autoCropThumbnailFrame) != null) {
@@ -177,7 +178,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                 File.WriteAllBytes(thumbnailAssetPath, ImageConversion.EncodeToPNG(thumbnailTexture));
                 AssetDatabase.ImportAsset(thumbnailAssetPath);
             }
-
+            AssetDatabase.SaveAssets();
         }
 
 
