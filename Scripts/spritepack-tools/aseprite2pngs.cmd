@@ -1,1 +1,1 @@
-@charsheettool.exe aseprite-extract %*
+@"%~dp0\spritepackutil.exe" aseprite-extract %*

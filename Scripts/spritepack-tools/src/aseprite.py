@@ -2,6 +2,8 @@ from enum import IntEnum, IntFlag
 from io import BytesIO
 import struct
 
+from typing import List
+
 ## https://github.com/aseprite/aseprite/blob/master/docs/ase-file-specs.md
 
 
@@ -222,7 +224,7 @@ def _ParseChunk(chunkType: ChunkType, chunkBytes: bytes, pixelsize: int):
             result["height"] = celHeight
             result["pixels"] = []
             for _ii in range(celHeight):
-                row = []
+                row: List = []
                 result["pixels"].append(row)
                 for _jj in range(celWidth):
                     pixel = data.readpixel()
@@ -366,7 +368,7 @@ import pprint
 from pathlib import Path
 
 
-def dump_file(input_filename):
+def dump_file(input_filename) -> None:
     inp = Path(input_filename)
     data = AsepriteIO(inp.read_bytes())
     print(f"## {inp} ##")
@@ -392,7 +394,7 @@ from PIL import Image
 import PIL
 
 
-def extract_images(input_filename):
+def extract_images(input_filename) -> None:
     inp = Path(input_filename)
     data = AsepriteIO(inp.read_bytes())
     header = data.readheader()
@@ -421,3 +423,60 @@ def extract_images(input_filename):
     pprint.pprint(layers)
     # pprint.pprint(chunk)
     # _framedata = data.readbytearr(numbytes)
+
+
+def extract_frame(input_filename: str, frame_index: int) -> Image.Image:
+    inp = Path(input_filename)
+    data = AsepriteIO(inp.read_bytes())
+    header = data.readheader()
+    image = Image.new("RGBA", header["size"])
+
+    layers = []
+    lastlayerdepth = {}
+    found_frame = False
+
+    for framenumber in range(header["numframes"]):
+
+        frameheader = data.readframeheader()
+        for _jj in range(frameheader["numchunks"]):
+            chunk = data.readchunk()
+
+            if chunk["type"] == ChunkType.LayerChunk:
+                layer = chunk["data"]
+                lastlayerdepth[layer["childLevel"]] = layer
+
+                curparentLevel = layer["childLevel"] - 1
+                while curparentLevel >= 0:
+                    parent = lastlayerdepth[curparentLevel]
+                    if Layer.Flag.Visible not in parent["flags"]:
+                        layer["flags"] &= ~Layer.Flag.Visible
+
+                    curparentLevel -= 1
+
+                layers.append(layer)
+            if chunk["type"] == ChunkType.CelChunk:
+                cel = chunk["data"]
+                if cel["opacity"] == 0:
+                    continue
+                if layers[cel["layerIndex"]]["opacity"] == 0:
+                    continue
+                # TODO: HANDLE PARENT LAYER VISIBILITY
+                if Layer.Flag.Visible not in layers[cel["layerIndex"]]["flags"]:
+                    continue
+
+
+                if framenumber + 1 != frame_index:
+                    continue
+                found_frame = True
+
+                for yy, row in enumerate(cel["pixels"]):
+                    for xx, vv in enumerate(row):
+                        if vv[3] == 0:
+                            continue
+                        # print(f"image.putpixel(({xx}, {yy}), {vv})")
+                        image.putpixel((xx + cel["xPos"], yy + cel["yPos"]), vv)
+
+    if not found_frame:
+        raise Exception(f"Frame index out of range: {frame_index}")
+
+    return image

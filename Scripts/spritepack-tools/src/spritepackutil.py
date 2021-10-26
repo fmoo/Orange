@@ -1,12 +1,13 @@
 from argparse import ArgumentParser
-from aseprite import extract_images, dump_file
+from aseprite import extract_frame, extract_images, dump_file
 from pathlib import Path
 import PIL
 import sys
+import re
+import easygui
 
 from PIL import Image
-from typing import Any, List, Tuple
-
+from typing import Any, List, Tuple, NamedTuple, Optional
 
 def cmd_split(ns: Any) -> int:
     input_filenames = ns.input_filename
@@ -133,6 +134,65 @@ def cmd_aseprite_extract(ns: Any) -> int:
     return 0
 
 
+a2s_token_matcher = re.compile(r'f(\d+)r(\d+)c(\d+)(f?)');
+
+class SheetToken(NamedTuple):
+    frame: int
+    row: int
+    col: int
+    flip: bool
+
+
+def cmd_aseprite_makesheet(ns: Any) -> int:
+    tokens: List[SheetToken] = []
+    files: List[str] = []
+    for token in ns.token_or_filename:
+        match = a2s_token_matcher.match(token)
+        if match is not None:
+            tokens.append(SheetToken(int(match.group(1)), int(match.group(2)), int(match.group(3)), True if match.group(4) else False))
+        else:
+            files.append(token)
+
+    rows: int = max(tokens, key=lambda t: t.row).row
+    cols: int = max(tokens, key=lambda t: t.col).col
+
+    print(f'Using rows={rows} cols={cols}')
+
+    for input_filename in files:
+        output: Optional[Image.Image] = None
+        for token in tokens:
+            frame = extract_frame(input_filename, token.frame)
+            if output is None:
+                output = Image.new("RGBA", (cols * frame.size[0], rows * frame.size[1]))
+
+            if token.flip:
+                frame = frame.transpose(Image.FLIP_LEFT_RIGHT)
+
+            output.paste(frame, ((token.col - 1) * frame.size[0], (token.row - 1) * frame.size[1]))
+
+        outpath = None
+        inp = Path(input_filename)
+        if ns.prompt:
+            outpath = easygui.enterbox("Enter Filename", "Save As...", f"{inp.stem}.png")
+            if outpath is None:
+                print("No output filename specified. Aborting.")
+                return -1
+            outpath = inp.with_name(outpath)
+
+        else:
+            outpath = inp.with_name(
+                f"{inp.stem}.png"
+            )
+
+        if output is None:
+            print("No tokens to extract.")
+        else:
+            print(f"Writing {outpath}...")
+            output.save(outpath)
+
+    return 0
+
+
 def cmd_aseprite_info(ns: Any) -> int:
     for fn in ns.input_filename:
         dump_file(fn)
@@ -205,6 +265,11 @@ def main():
     cmd = sp.add_parser("aseprite-extract")
     cmd.add_argument("input_filename", nargs="+")
     cmd.set_defaults(cmd=cmd_aseprite_extract)
+
+    cmd = sp.add_parser("aseprite-makesheet")
+    cmd.add_argument("token_or_filename", nargs="+")
+    cmd.add_argument("--prompt", action="store_true")
+    cmd.set_defaults(cmd=cmd_aseprite_makesheet)
 
     cmd = sp.add_parser("aseprite-info")
     cmd.add_argument("input_filename", nargs="+")
