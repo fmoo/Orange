@@ -162,6 +162,9 @@ def cmd_aseprite_makesheet(ns: Any) -> int:
         output: Optional[Image.Image] = None
         for token in tokens:
             frame = extract_frame(input_filename, token.frame)
+            if frame is None:
+                continue
+
             if output is None:
                 output = Image.new("RGBA", (cols * frame.size[0], rows * frame.size[1]))
 

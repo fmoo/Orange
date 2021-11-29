@@ -1,8 +1,9 @@
 from enum import IntEnum, IntFlag
 from io import BytesIO
 import struct
+import warnings
 
-from typing import List
+from typing import List, Optional
 
 ## https://github.com/aseprite/aseprite/blob/master/docs/ase-file-specs.md
 
@@ -425,7 +426,7 @@ def extract_images(input_filename) -> None:
     # _framedata = data.readbytearr(numbytes)
 
 
-def extract_frame(input_filename: str, frame_index: int) -> Image.Image:
+def extract_frame(input_filename: str, frame_index: int) -> Optional[Image.Image]:
     inp = Path(input_filename)
     data = AsepriteIO(inp.read_bytes())
     header = data.readheader()
@@ -477,6 +478,7 @@ def extract_frame(input_filename: str, frame_index: int) -> Image.Image:
                         image.putpixel((xx + cel["xPos"], yy + cel["yPos"]), vv)
 
     if not found_frame:
-        raise Exception(f"Frame index out of range: {frame_index}")
+        warnings.warn(f"Frame not found: {frame_index}")
+        return None
 
     return image
