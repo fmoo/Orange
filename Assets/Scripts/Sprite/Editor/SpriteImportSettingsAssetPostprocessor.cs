@@ -94,8 +94,16 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
         foreach (var syncAsset in importSettings.syncAssets) {
 
             // TODO: only check textureMatch for Default.SIS?
-            if (string.IsNullOrWhiteSpace(syncAsset.importName) || string.IsNullOrWhiteSpace(syncAsset.frameOffsets) || string.IsNullOrWhiteSpace(syncAsset.textureMatch)) return;
-            if (!texture.name.Contains(syncAsset.textureMatch) && syncAsset.textureMatch != "*") continue;
+            if (string.IsNullOrWhiteSpace(syncAsset.importName)
+            || (string.IsNullOrWhiteSpace(syncAsset.frameOffsets) && syncAsset.textureMatch != "*")
+            || (string.IsNullOrWhiteSpace(syncAsset.textureMatch))
+            ) {
+                Debug.Log($"Invalid sync settings on {importSettings.name}. Aborting...", importSettings);
+                return;
+            }
+            if (!texture.name.Contains(syncAsset.textureMatch) && syncAsset.textureMatch != "*") {
+                continue;
+            }
 
             var groups = syncAsset.groups.ToList();
             if (groups.Count == 0) groups.Add(new SpriteImportSettings.SpriteDBBatchGroup());
@@ -104,13 +112,18 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
 
             foreach (var group in groups) {
                 // TODO: Don't pull in duplicates if index is referenced multiple times.
-                var importSprites = syncAsset.frameOffsets.Split(',').Select(s => int.Parse(s)).Select(ii => {
-                    int index = ii + syncAsset.baseIndex + group.baseOffset;
-                    if (index < 0 || index >= sprites.Length) {
-                        Debug.LogError($"Index {index} out of range when parsing frameOffset {ii} with baseIndex {syncAsset.baseIndex} and group offset {group.baseOffset} for {texturePath}", importSettings);
-                    }
-                    return sprites[index];
-                });
+                IEnumerable<Sprite> importSprites;
+                if (syncAsset.frameOffsets != "" || syncAsset.textureMatch != "*") {
+                    importSprites = syncAsset.frameOffsets.Split(',').Select(s => int.Parse(s)).Select(ii => {
+                        int index = ii + syncAsset.baseIndex + group.baseOffset;
+                        if (index < 0 || index >= sprites.Length) {
+                            Debug.LogError($"Index {index} out of range when parsing frameOffset {ii} with baseIndex {syncAsset.baseIndex} and group offset {group.baseOffset} for {texturePath}", importSettings);
+                        }
+                        return sprites[index];
+                    });
+                } else {
+                    importSprites = sprites;
+                }
                 var importName = syncAsset.textureMatch == "*" ? texture.name : syncAsset.importName;
                 foreach (var replaceRule in syncAsset.replaceRules) {
                     importName = importName.Replace(replaceRule.match, replaceRule.replace);
