@@ -434,6 +434,7 @@ def extract_frame(input_filename: str, frame_index: int) -> Optional[Image.Image
 
     layers = []
     lastlayerdepth = {}
+    lastlayercel = {}
     found_frame = False
 
     for framenumber in range(header["numframes"]):
@@ -457,6 +458,10 @@ def extract_frame(input_filename: str, frame_index: int) -> Optional[Image.Image
                 layers.append(layer)
             if chunk["type"] == ChunkType.CelChunk:
                 cel = chunk["data"]
+
+                if cel["type"] != 1:
+                    lastlayercel[cel["layerIndex"]] = cel
+
                 if cel["opacity"] == 0:
                     continue
                 if layers[cel["layerIndex"]]["opacity"] == 0:
@@ -469,6 +474,10 @@ def extract_frame(input_filename: str, frame_index: int) -> Optional[Image.Image
                 if framenumber + 1 != frame_index:
                     continue
                 found_frame = True
+
+                if cel["type"] == 1:
+                    cel = lastlayercel[cel["layerIndex"]]
+                    # TODO: use old cel's xpos/ypos/opacity?
 
                 for yy, row in enumerate(cel["pixels"]):
                     for xx, vv in enumerate(row):
