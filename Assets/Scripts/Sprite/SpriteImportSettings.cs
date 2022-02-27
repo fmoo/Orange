@@ -38,6 +38,7 @@ public class SpriteImportSettings : ScriptableObject {
         public string suffix;
         public string prefix;
         public int baseOffset;
+        public bool flip;
     }
 
     public string autoCropThumbnailFrame;

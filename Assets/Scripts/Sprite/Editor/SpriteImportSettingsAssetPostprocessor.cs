@@ -145,7 +145,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                     importSettings.spriteDB.importTimePerFrame = syncAsset.timePerFrame;
                     importSettings.spriteDB.importAnimName = importName;
                     importSettings.spriteDB.loopImportedAnimation = syncAsset.loop;
-                    importSettings.spriteDB.flipImportedSprites = syncAsset.flip;
+                    importSettings.spriteDB.flipImportedSprites = syncAsset.flip ^ group.flip;
                     importSettings.spriteDB.DoImportSprites();
                     EditorUtility.SetDirty(importSettings.spriteDB);
                 }
