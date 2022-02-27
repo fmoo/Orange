@@ -56,4 +56,20 @@ public class OrangeButton : Button {
         // TODO: if we want to bypass/abort for other reasons, do it here
         base.OnPointerClick(eventData);
     }
+
+    protected override void OnEnable() {
+        base.OnEnable();
+        if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == gameObject) {
+            foreach (var go in activateGameObjectsOnFocus) {
+                go.SetActive(true);
+            }
+        }
+    }
+
+    override protected void OnDisable() {
+        foreach (var go in activateGameObjectsOnFocus) {
+            go.SetActive(false);
+        }
+        base.OnDisable();
+    }
 }
