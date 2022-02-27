@@ -162,21 +162,34 @@ public class OrangeSpriteDB : ScriptableObject {
         foreach (var sprite in importSprites) {
             var name = !renameImportedSprites ? sprite.name : $"{importAnimName}_{ii}";
             addedList.Add(name);
-            sprites.Add(new OrangeSpriteManagerSprite() {
-                sprite = sprite,
-                name = name,
-                flip = flipImportedSprites,
-            });
+            var existingSprite = GetSprite(name);
+            if (existingSprite != null) {
+                existingSprite.sprite = sprite;
+                existingSprite.flip = flipImportedSprites;
+            } else {
+                sprites.Add(new OrangeSpriteManagerSprite() {
+                    sprite = sprite,
+                    name = name,
+                    flip = flipImportedSprites,
+                });
+            }
             ii += 1;
         }
         if (importAnimName != "") {
             string config = string.Join(",", addedList);
-            animations.Add(new OrangeSpriteManagerAnimation() {
-                name = importAnimName,
-                config = config,
-                duration = importTimePerFrame * importSprites.Count(),
-                loop = loopImportedAnimation
-            });
+            var existingAnimation = GetAnimation(importAnimName);
+            if (existingAnimation != null) {
+                existingAnimation.config = config;
+                existingAnimation.duration = importTimePerFrame * importSprites.Count();
+                existingAnimation.loop = loopImportedAnimation;
+            } else {
+                animations.Add(new OrangeSpriteManagerAnimation() {
+                    name = importAnimName,
+                    config = config,
+                    duration = importTimePerFrame * importSprites.Count(),
+                    loop = loopImportedAnimation
+                });
+            }
         }
         importSprites = new Sprite[0];
         importAnimName = "";

@@ -38,6 +38,10 @@ public class OrangeSpriteManagerAnimation {
         return GetSpriteForIndex((int)(frames.Count * f));
     }
 
+    public OrangeSpriteManagerSprite GetLastSprite() {
+        if (frames.Count < 1) return null;
+        return GetSpriteForIndex(frames.Count - 1);
+    }
 
     public OrangeSpriteManagerSprite GetSpriteForIndex(int frameIndex) {
         return frames[frameIndex];

@@ -26,15 +26,16 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         return sprites != null && sprites.GetAnimation(animationName) != null;
     }
 
-    public void SetAnimation(string animationName) {
+    public void SetAnimation(string animationName, bool skipReset = false) {
         enabled = true;
         currentAnimation = sprites.GetAnimation(animationName);
         currentAnimationSprites = sprites;
         if (animationName == this.animationName) return;
+        // Debug.Log($"SetAnimation called with {animationName} skipReset={skipReset}", this);
         var lastDone = onAnimationDone;
         onAnimationDone = null;
         lastDone?.Invoke();
-        if (resetTimeOnChange || !(currentAnimation?.loop ?? false)) {
+        if (!skipReset && (resetTimeOnChange || !(currentAnimation?.loop ?? false))) {
             timeElapsed = 0f;
         }
         stallTime = 0f;
@@ -42,8 +43,12 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         OrangeSpriteManagerSprite sprite = null;
         if (currentAnimation == null)
             Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}", (Object)sprites ?? this);
-        else
-            sprite = currentAnimation.GetSpriteForIndex(0);
+        else {
+            sprite = currentAnimation.GetSpriteForTime(timeElapsed);
+            if (sprite == null) {
+                sprite = currentAnimation.GetLastSprite();
+            }
+        }
         if (sprite != null)
             SetSprite(sprite);
     }

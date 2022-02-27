@@ -129,17 +129,25 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                     importName = importName.Replace(replaceRule.match, replaceRule.replace);
                 }
 
-                bool didHaveSprite = importSettings.spriteDB.sprites.FirstOrDefault(s => s.name == importSettings.autoCropThumbnailFrame) != null;
                 importName = $"{group.prefix}{importName}{group.suffix}";
-                importSettings.spriteDB.RemovePrefix(importName);
+                // importSettings.spriteDB.RemovePrefix(importName);
+
+                if (importSettings.autoCropThumbnailFrame.StartsWith(importName)) {
+                    doReimportThumbnail = true;
+                }
 
                 if (syncAsset.textureMatch == "*" && importSprites.Count() == 1) {
-                    importSettings.spriteDB.sprites.Add(
-                        new OrangeSpriteManagerSprite() {
-                            name = importName,
-                            sprite = importSprites.First(),
-                        }
-                    );
+                    var existingSprite = importSettings.spriteDB.GetSprite(importName);
+                    if (existingSprite != null) {
+                        existingSprite.sprite = importSprites.First();
+                    } else {
+                        importSettings.spriteDB.sprites.Add(
+                            new OrangeSpriteManagerSprite() {
+                                name = importName,
+                                sprite = importSprites.First(),
+                            }
+                        );
+                    }
                 } else {
                     importSettings.spriteDB.importSprites = importSprites.ToArray();
                     importSettings.spriteDB.importTimePerFrame = syncAsset.timePerFrame;
@@ -150,11 +158,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                     EditorUtility.SetDirty(importSettings.spriteDB);
                 }
 
-                if (!didHaveSprite && importSettings.spriteDB.sprites.FirstOrDefault(s => s.name == importSettings.autoCropThumbnailFrame) != null) {
-                    doReimportThumbnail = true;
-                }
             }
-
         }
 
         if (doReimportThumbnail && !string.IsNullOrWhiteSpace(importSettings.autoCropThumbnailFrame) && importSettings.spriteDB != null) {
@@ -177,6 +181,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                 (int)thumbnailSprite.textureRect.y,
                 (int)thumbnailSprite.textureRect.width,
                 (int)thumbnailSprite.textureRect.height);
+            // TODO: ArrayUtility.Equals doesn't seem to actually work here...
             if (oldThumbnailTexture == null || !ArrayUtility.Equals(oldPixels, pixels)) {
                 var thumbnailTexture = new Texture2D((int)thumbnailSprite.textureRect.width, (int)thumbnailSprite.textureRect.height);
                 thumbnailTexture.SetPixels(pixels);
