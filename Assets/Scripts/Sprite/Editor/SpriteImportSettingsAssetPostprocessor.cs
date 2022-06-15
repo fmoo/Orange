@@ -136,7 +136,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                     doReimportThumbnail = true;
                 }
 
-                if (syncAsset.textureMatch == "*" && importSprites.Count() == 1) {
+                if (syncAsset.textureMatch == "*" && importSprites.Count() == 1 && !syncAsset.forceAnimationImport) {
                     var existingSprite = importSettings.spriteDB.GetSprite(importName);
                     if (existingSprite != null) {
                         existingSprite.sprite = importSprites.First();
@@ -148,6 +148,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                             }
                         );
                     }
+                    EditorUtility.SetDirty(importSettings.spriteDB);
                 } else {
                     importSettings.spriteDB.importSprites = importSprites.ToArray();
                     importSettings.spriteDB.importTimePerFrame = syncAsset.timePerFrame;

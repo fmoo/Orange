@@ -22,6 +22,7 @@ public class SpriteImportSettings : ScriptableObject {
         public bool loop;
         public bool flip;
         public float timePerFrame = 0.08f;
+        public bool forceAnimationImport = false;
 
         public List<SpriteDBBatchGroup> groups;
         public List<ReplaceRule> replaceRules;
