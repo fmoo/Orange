@@ -33,6 +33,17 @@ public static class RectTransformExtensions {
         return new Corners(corners);
     }
 
+    public static Vector3[] GetLocalCorners(this RectTransform rect) {
+        Vector3[] corners = new Vector3[4];
+        rect.GetLocalCorners(corners);
+        return corners;
+    }
+
+    public static Corners GetLocalCornersStruct(this RectTransform rect) {
+        var corners = rect.GetLocalCorners();
+        return new Corners(corners);
+    }
+
     public class Corners {
         public Corners(Vector3[] corners) {
             LowerLeft = corners[0];
@@ -44,6 +55,11 @@ public static class RectTransformExtensions {
         public readonly Vector3 UpperRight = Vector3.zero;
         public readonly Vector3 LowerLeft = Vector3.zero;
         public readonly Vector3 LowerRight = Vector3.zero;
+
+        public Vector3 MiddleLeft => (UpperLeft + LowerLeft) / 2f;
+        public Vector3 MiddleRight => (UpperRight + LowerRight) / 2f;
+        public Vector3 TopCenter => (UpperLeft + UpperRight) / 2f;
+        public Vector3 BottomCenter => (LowerLeft + LowerRight) / 2f;
     }
 
     static Vector3[] _corners = new Vector3[4];
