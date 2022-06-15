@@ -220,7 +220,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
 
     static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
         foreach (var assetPath in importedAssets) {
-            if (assetPath.EndsWith(".png")) {
+            if (assetPath.EndsWith(".png") || assetPath.EndsWith(".gif")) {
                 Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(assetPath, typeof(Texture2D));
                 Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(assetPath).OfType<Sprite>().ToArray();
                 OnPostprocessSpritesReal(assetPath, texture, sprites);
