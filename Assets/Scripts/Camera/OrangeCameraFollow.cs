@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 using NaughtyAttributes;
+using UnityEngine.U2D;
 
 public class OrangeCameraFollow : MonoBehaviour {
     public GameObject target;
+    public PixelPerfectCamera ppCamera;
     public Camera affectCamera;
     public Camera[] affectCameras;
 
@@ -13,7 +15,22 @@ public class OrangeCameraFollow : MonoBehaviour {
 
     public System.Action onCameraMoved;
 
+    public bool adjustOnUpdate = true;
+    public bool adjustOnLateUpdate = true;
+    public bool adjustOnFixedUpdate = false;
+
+    void Update() {
+        if (adjustOnUpdate) DoUpdate();
+    }
     void LateUpdate() {
+        if (adjustOnLateUpdate) DoUpdate();
+    }
+    void FixedUpdate() {
+        if (adjustOnFixedUpdate) DoUpdate();
+    }
+
+
+    void DoUpdate() {
         Vector3 origPosition = affectCamera.transform.position;
         if (enableDeadZone) {
             DoUpdateDeadZone();
@@ -148,7 +165,7 @@ public class OrangeCameraFollow : MonoBehaviour {
         return GetCamera().GetBoundsRaycasted();
     }
 
-    Vector3 GetClampedPosition(Vector3 wantPosition, bool offset=true) {
+    Vector3 GetClampedPosition(Vector3 wantPosition, bool offset = true) {
         // If bounds clamping is disabled, the position we want is the one we get.
         if (!enableClamping) return wantPosition;
 
