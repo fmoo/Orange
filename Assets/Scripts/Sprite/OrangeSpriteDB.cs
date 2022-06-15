@@ -16,6 +16,10 @@ public class OrangeSpriteDB : ScriptableObject {
     private Dictionary<string, OrangeSpriteManagerAnimation> namedAnimations =
         new Dictionary<string, OrangeSpriteManagerAnimation>();
 
+    public GenericDictionary<string, string> strings;
+    public GenericDictionary<string, float> variables;
+    public GenericDictionary<string, bool> flags;
+
     public OrangeSpriteManagerSprite GetSprite(string name) {
         if (!Application.isPlaying) {
             return sprites.FirstOrDefault(s => s.name == name);
