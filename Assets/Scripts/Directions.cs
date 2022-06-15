@@ -1,8 +1,15 @@
 ﻿using UnityEngine;
 
-public enum Directions2 {
+public enum HorizontalDirection {
+    NONE,
     LEFT,
     RIGHT,
+}
+
+public enum VerticalDirection {
+    NONE,
+    UP,
+    DOWN,
 }
 
 public enum Directions4 {
@@ -62,30 +69,30 @@ public static class DirectionsUtils {
         }
     }
 
-    public static float ToFloat(this Directions2 d) {
+    public static float ToFloat(this HorizontalDirection d) {
         switch (d) {
-            case Directions2.LEFT:
+            case HorizontalDirection.LEFT:
                 return -1f;
-            case Directions2.RIGHT:
+            case HorizontalDirection.RIGHT:
                 return 1f;
         }
         return 0f;
     }
-    public static int ToInt(this Directions2 d) {
+    public static int ToInt(this HorizontalDirection d) {
         switch (d) {
-            case Directions2.LEFT:
+            case HorizontalDirection.LEFT:
                 return -1;
-            case Directions2.RIGHT:
+            case HorizontalDirection.RIGHT:
                 return 1;
         }
         return 0;
     }
 
-    public static string ToString(this Directions2 d) {
+    public static string ToString(this HorizontalDirection d) {
         switch (d) {
-            case Directions2.LEFT:
+            case HorizontalDirection.LEFT:
                 return "left";
-            case Directions2.RIGHT:
+            case HorizontalDirection.RIGHT:
                 return "right";
         }
         return "";
@@ -100,6 +107,26 @@ public static class DirectionsUtils {
             case Directions4.RIGHT:
                 return Vector2.right;
             case Directions4.DOWN:
+                return Vector2.down;
+        }
+        return Vector2.zero;
+    }
+
+    public static Vector2 ToVector2(this HorizontalDirection d) {
+        switch (d) {
+            case HorizontalDirection.LEFT:
+                return Vector2.left;
+            case HorizontalDirection.RIGHT:
+                return Vector2.right;
+        }
+        return Vector2.zero;
+    }
+
+    public static Vector2 ToVector2(this VerticalDirection d) {
+        switch (d) {
+            case VerticalDirection.UP:
+                return Vector2.up;
+            case VerticalDirection.DOWN:
                 return Vector2.down;
         }
         return Vector2.zero;
