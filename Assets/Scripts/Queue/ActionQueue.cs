@@ -30,7 +30,7 @@ public class ActionQueue : MonoBehaviour {
         }
 
         IEnumerator Wrap(Action<Action> work) {
-            var onDone = () => {
+            System.Action onDone = () => {
                 isDone = true;
                 OnDone?.Invoke();
             };

@@ -31,14 +31,14 @@ public class OrangeSpriteDBAssetPostprocessor : AssetPostprocessor {
         // Import named sprites (tiles with `spriteName`)
         foreach (var tile in tileset.m_Tiles) {
             var spriteName = tile.m_CustomProperties.Find(p => p.m_Name == "spriteName")?.m_Value;
-            if (spriteName == null) continue;
+            if (string.IsNullOrWhiteSpace(spriteName)) continue;
             spriteDB.EditorSetSprite(spriteName, tile.m_Sprite);
         }
 
         // Import named animation (tiles with `animationName`)
         foreach (var tile in tileset.m_Tiles) {
             var animationName = tile.m_CustomProperties.Find(p => p.m_Name == "animationName")?.m_Value;
-            if (animationName == null) continue;
+            if (string.IsNullOrWhiteSpace(animationName)) continue;
 
             bool loop = true;
             var prop = tile.m_CustomProperties.Find(p => p.m_Name == "animationLoop");
@@ -62,7 +62,7 @@ public class OrangeSpriteDBAssetPostprocessor : AssetPostprocessor {
         // Import flipped named animations
         foreach (var tile in tileset.m_Tiles) {
             var animationName = tile.m_CustomProperties.Find(p => p.m_Name == "animationFlipName")?.m_Value;
-            if (animationName == null) continue;
+            if (string.IsNullOrWhiteSpace(animationName)) continue;
 
             bool loop = true;
             var prop = tile.m_CustomProperties.Find(p => p.m_Name == "animationLoop");
