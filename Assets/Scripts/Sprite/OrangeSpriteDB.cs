@@ -221,7 +221,11 @@ public class OrangeSpriteDB : ScriptableObject {
         UnityEditor.AssetDatabase.ImportAsset(assetPath.Replace(".asset", ".tsx"));
     }
 
-
+    [NaughtyAttributes.Button("Sort Sprites")]
+    void EditorSortSprites() {
+        sprites.Sort((a, b) => a.name.CompareTo(b.name));
+        animations.Sort((a, b) => a.name.CompareTo(b.name));
+    }
 #endif
 
 
