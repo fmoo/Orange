@@ -14,6 +14,7 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
     public DialogueViewBase[] dialogueViews;
     public Transform extensionContainer;
     public Transform runnerContainer;
+    public LineProviderBehaviour lineProvider;
 
     List<OrangeYarnExtension> extensions;
 
@@ -21,6 +22,7 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
     public int createdRunners = 0;
 
     public bool AreRunning => foregroundRunners.Count > 0;
+    public BehaviorSubject<bool> foregroundRunningOb = new BehaviorSubject<bool>(false);
 
     protected override void Awake() {
         base.Awake();
@@ -42,7 +44,7 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
     bool canContinue = true;
     public void OnConfirm() {
         if (!canContinue) return;
-        var lineView = GetComponentInChildren<LineView>();
+        LineView lineView = dialogueViews.First(v => v is LineView) as LineView;
 
         canContinue = false;
         this.UpdateAsObservable().TakeUntilDestroy(this).Take(1).Subscribe(_ => {
@@ -51,22 +53,35 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         });
     }
 
-    public void StartScript(string sceneName, System.Action onDone = null, bool runInBackground = false, Dictionary<string, object> context = null) {
+    public StartedCutscene StartScript(string sceneName, System.Action onDone = null, bool runInBackground = false, Dictionary<string, object> context = null) {
+        // Early out if no sceneName was passed
+        if (string.IsNullOrWhiteSpace(sceneName)) {
+            onDone?.Invoke();
+            return null;
+        }
+
         var (runner, didCreate) = ClaimRunner();
+        SetRunnerContext(runner, context);
         runner.startAutomatically = didCreate;
         runner.startNode = didCreate ? sceneName : "";
 
         if (!runInBackground) {
             foregroundRunners.Add(runner);
+            if (foregroundRunners.Count == 1) foregroundRunningOb.OnNext(true);
         }
 
         dialogueDoneCallbacks[runner] = onDone;
         // If this is a new runner we *have* to wait for Start() to finish initialization
         if (!didCreate) {
-            SetRunnerContext(runner, context);
-            runner.StartDialogue(sceneName);
+            try {
+                runner.StartDialogue(sceneName);
+            } catch (Yarn.DialogueException e) {
+                Debug.LogError(e, this);
+                HandleRunnerComplete(runner);
+            }
         }
-        // TODO: Return disposable / suspendable wrapper object.
+
+        return new StartedCutscene() { runner = runner, isRunning = true };
     }
 
     void SetRunnerContext(DialogueRunner runner, Dictionary<string, object> context) {
@@ -100,15 +115,20 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         newRunner.startAutomatically = false;
         newRunner.startNode = "";
         newRunner.yarnProject = yarnProject;
+        newRunner.onNodeComplete = new DialogueRunner.StringUnityEvent();
+        newRunner.onNodeStart = new DialogueRunner.StringUnityEvent();
+        newRunner.onDialogueComplete = new UnityEngine.Events.UnityEvent();
+        newRunner.onCommand = new DialogueRunner.StringUnityEvent();
+        newRunner.lineProvider = lineProvider;
 
         // Configure variable storage
         var scopedData = newRunnerObj.AddComponent<InMemoryVariableStorage>();
         var scopedVariableHandler = newRunnerObj.AddComponent<ScopedVariableStore>();
-        scopedVariableHandler.prefix = "_";
+        scopedVariableHandler.prefix = "$_";
         scopedVariableHandler.scopedData = scopedData;
         scopedVariableHandler.parentData = mainVariableStorage;
-        Destroy(newRunner.variableStorage);
-        newRunner.variableStorage = scopedVariableHandler;
+        Destroy(newRunner.VariableStorage);
+        newRunner.VariableStorage = scopedVariableHandler;
         newRunner.verboseLogging = verboseLogging;
         newRunner.runSelectedOptionAsLine = optionsAreDialogue;
         newRunner.dialogueViews = dialogueViews.ToArray();
@@ -131,11 +151,17 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
     void HandleRunnerComplete(DialogueRunner runner) {
         if (foregroundRunners.Contains(runner)) {
             foregroundRunners.Remove(runner);
+            if (foregroundRunners.Count == 0) foregroundRunningOb.OnNext(false);
         }
         var action = dialogueDoneCallbacks[runner];
         dialogueDoneCallbacks.Remove(runner);
         runnerPool.Enqueue(runner);
         // TODO: Any other cleanup.
         action?.Invoke();
+    }
+
+    public class StartedCutscene {
+        public bool isRunning = false;
+        public DialogueRunner runner = null;
     }
 }

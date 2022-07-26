@@ -12,14 +12,6 @@ public class ScopedVariableStore : VariableStorageBehaviour {
         scopedData.Clear();
     }
 
-    public override bool Contains(string variableName) {
-        if (variableName.StartsWith(prefix)) {
-            return scopedData.Contains(variableName);
-        } else {
-            return parentData.Contains(variableName);
-        }
-    }
-
     public override void SetValue(string variableName, bool boolValue) {
         if (variableName.StartsWith(prefix)) {
             scopedData.SetValue(variableName, boolValue);
@@ -41,6 +33,10 @@ public class ScopedVariableStore : VariableStorageBehaviour {
         } else {
             parentData.SetValue(variableName, stringValue);
         }
+    }
+
+    public override bool Contains(string variableName) {
+        return scopedData.Contains(variableName) || parentData.Contains(variableName);
     }
 
     public override bool TryGetValue<T>(string variableName, out T result) {

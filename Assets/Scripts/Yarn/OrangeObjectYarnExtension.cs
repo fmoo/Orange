@@ -52,7 +52,6 @@ public class OrangeObjectYarnExtension : OrangeYarnExtension {
         return prefabObj.name;
     }
 
-
     public string FunctionGetStr(string objectId, string propName, string defaultValue = "") {
         if (TryFindComponent<OrangeSpriteAnimator>(objectId, out var animator)) {
             if (animator.sprites.strings.TryGetValue(propName, out var value)) {
