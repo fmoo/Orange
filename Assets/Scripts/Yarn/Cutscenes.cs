@@ -26,6 +26,7 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
 
     protected override void Awake() {
         base.Awake();
+        if (lineProvider != null) lineProvider.YarnProject = yarnProject;
         if (extensionContainer == null) extensionContainer = transform;
         extensions = extensionContainer.GetComponentsInChildren<OrangeYarnExtension>().ToList();
     }
@@ -131,7 +132,7 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         newRunner.VariableStorage = scopedVariableHandler;
         newRunner.verboseLogging = verboseLogging;
         newRunner.runSelectedOptionAsLine = optionsAreDialogue;
-        newRunner.dialogueViews = dialogueViews.ToArray();
+        newRunner.SetDialogueViews(dialogueViews);
         newRunner.Dialogue.AddProgram(yarnProject.GetProgram());
         Destroy(newRunner.GetComponent<LineView>());
 
@@ -158,6 +159,13 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         runnerPool.Enqueue(runner);
         // TODO: Any other cleanup.
         action?.Invoke();
+    }
+
+    public static void UserRequestedViewAdvancement() {
+        foreach (var dialogueView in Cutscenes.Instance.dialogueViews) {
+            dialogueView.UserRequestedViewAdvancement();
+            break;
+        }
     }
 
     public class StartedCutscene {

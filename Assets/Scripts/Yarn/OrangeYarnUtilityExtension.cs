@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Yarn.Unity;
 using DG.Tweening;
 
-public class OrangeYarnUtilityExtension : GodshardYarnExtension {
+public class OrangeYarnUtilityExtension : OrangeYarnExtension {
     public Transform refsContainer;
     public GameObject refPrefab;
 
