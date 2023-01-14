@@ -7,22 +7,41 @@ using UnityEditor;
 [AutoCustomTmxImporter()]
 abstract public class OrangeTiledImporter : CustomTmxImporter {
 
-    abstract protected void PostProcessSuperObject(SuperObject customObject);
+    virtual protected void PostProcessSuperObject(SuperObject customObject, string mapName) {}
+    virtual protected void PostProcessSuperLayer(SuperLayer layer, string mapName) {}
 
     public override void TmxAssetImported(TmxAssetImportedArgs args) {
         foreach (var customObjectSet in args.ImportedSuperMap.GetComponentsInChildren<SuperObject>()) {
             SetObjectLayerRenderOverrides(customObjectSet);
-            PostProcessSuperObject(customObjectSet);
+            PostProcessSuperObject(customObjectSet, args.ImportedSuperMap.name);
         }
         foreach (var layer in args.ImportedSuperMap.GetComponentsInChildren<SuperLayer>()) {
-            if (layer is SuperImageLayer || layer.m_ParallaxX != 1f || layer.m_ParallaxY != 1f) {
-                InitParallaxLayer(layer);
+            if (IsParallaxLayer(layer)) {
+                InitParallaxLayer(layer, args.AssetImporter.PixelsPerUnit);
             }
+            PostProcessSuperLayer(layer, args.ImportedSuperMap.name);
         }
     }
 
+    bool IsParallaxLayer(SuperLayer layer) {
+        if (layer.m_ParallaxX != 1f || layer.m_ParallaxY != 1f) {
+            return true;
+        }
+        if (layer is SuperImageLayer imageLayer) {
+            var props = imageLayer.GetComponent<SuperCustomProperties>();
+            if (props == null) return false;
+            CustomProperty prop;
+            if (props.TryGetCustomProperty("autoscrollX", out prop)) {
+                if (prop.GetValueAsFloat() != 0f) return true;
+            }
+            if (props.TryGetCustomProperty("autoscrollY", out prop)) {
+                if (prop.GetValueAsFloat() != 0f) return true;
+            }
+        }
+        return false;
+    }
 
-    void InitParallaxLayer(SuperLayer layer) {
+    void InitParallaxLayer(SuperLayer layer, float pixelsPerUnit) {
         CustomProperty prop;
         var props = layer.GetComponent<SuperCustomProperties>();
 
@@ -34,10 +53,7 @@ abstract public class OrangeTiledImporter : CustomTmxImporter {
 
         Vector2Int screenDimension = new Vector2Int(320, 180);
 
-        var parallaxEffect = layer.gameObject.AddComponent<ParallaxLayerHandler>();
-        parallaxEffect.layer = layer;
-
-
+        bool didAddParallaxHandler = false;
         if (layer is SuperImageLayer) {
             var mapProps = layer.GetComponentInParent<SuperMap>().GetComponent<SuperCustomProperties>();
 
@@ -63,6 +79,10 @@ abstract public class OrangeTiledImporter : CustomTmxImporter {
             // Debug.LogWarning($"final uvRect dimensions are {rawImage.uvRect.width}x{rawImage.uvRect.height}");
 
             var canvas = layer.gameObject.AddComponent<Canvas>();
+            var backgroundUILayer = LayerMask.NameToLayer("BackgroundUI");
+            if (backgroundUILayer != -1) {
+                layer.gameObject.layer = backgroundUILayer;
+            }
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.sortingLayerID = spriteRenderer.sortingLayerID;
             canvas.sortingOrder = spriteRenderer.sortingOrder;
@@ -73,13 +93,32 @@ abstract public class OrangeTiledImporter : CustomTmxImporter {
             if (props.TryGetCustomProperty("autoscrollY", out prop)) {
                 autoscrollSpeed.y = prop.GetValueAsFloat();
             }
+            var cameraScroll = new Vector2(layer.m_ParallaxX, layer.m_ParallaxY);
 
-            var fx = layer.gameObject.AddComponent<ParallaxFX>();
-            fx.image = rawImage;
-            fx.scrollSpeed = autoscrollSpeed;
-            fx.cameraScroll = new Vector2(1f - layer.m_ParallaxX, 1f - layer.m_ParallaxY);
+            if (autoscrollSpeed != Vector2.zero || cameraScroll != Vector2.one) {
+                var fx = layer.gameObject.AddComponent<ParallaxFX>();
+                fx.canvas = canvas;
+                fx.image = rawImage;
+                fx.scrollSpeed = autoscrollSpeed;
+                fx.cameraScroll = new Vector2(layer.m_ParallaxX, layer.m_ParallaxY);
+                // fx.baseOffset.x = (layer.m_OffsetX / screenDimension.x) + 0.5f;
+                // fx.baseOffset.y = (layer.m_OffsetY / screenDimension.y) + 0.5f;
+                // fx.cameraScroll = new Vector2(1f - layer.m_ParallaxX, 1f - layer.m_ParallaxY);
+                fx.baseOffset = new Vector2(-layer.m_OffsetX, layer.m_OffsetY);
+                fx.pixelsPerUnit = pixelsPerUnit;
 
-            spriteRenderer.enabled = false;
+                // divide fx.baseOffset by image size in pixels
+                fx.baseOffset.x /= rawImage.texture.width;
+                fx.baseOffset.y /= rawImage.texture.height;
+
+                spriteRenderer.enabled = false;
+                didAddParallaxHandler = true;
+            }
+        }
+
+        if (!didAddParallaxHandler) {
+            var parallaxEffect = layer.gameObject.AddComponent<ParallaxLayerHandler>();
+            parallaxEffect.layer = layer;
         }
     }
 

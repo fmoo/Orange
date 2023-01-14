@@ -14,7 +14,7 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
     public DialogueViewBase[] dialogueViews;
     public Transform extensionContainer;
     public Transform runnerContainer;
-    public LineProviderBehaviour lineProvider;
+    public GameObject runnerPrefab;
 
     List<OrangeYarnExtension> extensions;
 
@@ -26,7 +26,6 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
 
     protected override void Awake() {
         base.Awake();
-        if (lineProvider != null) lineProvider.YarnProject = yarnProject;
         if (extensionContainer == null) extensionContainer = transform;
         extensions = extensionContainer.GetComponentsInChildren<OrangeYarnExtension>().ToList();
     }
@@ -34,6 +33,9 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
     Dictionary<DialogueRunner, System.Action> dialogueDoneCallbacks = new Dictionary<DialogueRunner, System.Action>();
     HashSet<DialogueRunner> foregroundRunners = new HashSet<DialogueRunner>();
 
+    public bool Exists(string name) {
+        return yarnProject.GetProgram().Nodes.ContainsKey(name);
+    }
 
     [NaughtyAttributes.Button]
     void DoDebug() {
@@ -54,7 +56,7 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         });
     }
 
-    public StartedCutscene StartScript(string sceneName, System.Action onDone = null, bool runInBackground = false, Dictionary<string, object> context = null) {
+    public Started StartScript(string sceneName, System.Action onDone = null, bool runInBackground = false, Dictionary<string, object> context = null) {
         // Early out if no sceneName was passed
         if (string.IsNullOrWhiteSpace(sceneName)) {
             onDone?.Invoke();
@@ -82,14 +84,17 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
             }
         }
 
-        return new StartedCutscene() { runner = runner, isRunning = true };
+        return new Started() { runner = runner, isRunning = true };
     }
 
     void SetRunnerContext(DialogueRunner runner, Dictionary<string, object> context) {
         if (context == null) return;
         var scopedVariables = runner.GetComponent<ScopedVariableStore>();
         foreach (var kv in context) {
-            if (kv.Value.GetType() == typeof(int)) {
+            if (kv.Value == null) {
+                // TODO: Handle null?
+                Debug.LogWarning($"Invalid Type NULL for key {kv.Key}!", runner);
+            } else if (kv.Value.GetType() == typeof(int)) {
                 scopedVariables.scopedData.SetValue($"$_{kv.Key}", (int)kv.Value);
             } else if (kv.Value.GetType() == typeof(float)) {
                 scopedVariables.scopedData.SetValue($"$_{kv.Key}", (float)kv.Value);
@@ -109,32 +114,17 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
             return (runnerPool.Dequeue(), false);
         }
 
-        var newRunnerObj = new GameObject($"Runner #{createdRunners}");
-        newRunnerObj.transform.SetParent(runnerContainer);
+        var newRunnerObj = Instantiate(runnerPrefab, runnerContainer);
+        newRunnerObj.name = $"Runner #{createdRunners}";
         createdRunners += 1;
-        var newRunner = newRunnerObj.AddComponent<DialogueRunner>();
-        newRunner.startAutomatically = false;
-        newRunner.startNode = "";
-        newRunner.yarnProject = yarnProject;
-        newRunner.onNodeComplete = new DialogueRunner.StringUnityEvent();
-        newRunner.onNodeStart = new DialogueRunner.StringUnityEvent();
-        newRunner.onDialogueComplete = new UnityEngine.Events.UnityEvent();
-        newRunner.onCommand = new DialogueRunner.StringUnityEvent();
-        newRunner.lineProvider = lineProvider;
-
-        // Configure variable storage
-        var scopedData = newRunnerObj.AddComponent<InMemoryVariableStorage>();
-        var scopedVariableHandler = newRunnerObj.AddComponent<ScopedVariableStore>();
-        scopedVariableHandler.prefix = "$_";
-        scopedVariableHandler.scopedData = scopedData;
-        scopedVariableHandler.parentData = mainVariableStorage;
-        Destroy(newRunner.VariableStorage);
-        newRunner.VariableStorage = scopedVariableHandler;
+        var newRunner = newRunnerObj.GetComponent<DialogueRunner>();
+        var scopedVariableStorage = newRunnerObj.GetComponent<ScopedVariableStore>();
+        if (scopedVariableStorage != null) {
+            scopedVariableStorage.parentData = mainVariableStorage;
+        }
         newRunner.verboseLogging = verboseLogging;
         newRunner.runSelectedOptionAsLine = optionsAreDialogue;
         newRunner.SetDialogueViews(dialogueViews);
-        newRunner.Dialogue.AddProgram(yarnProject.GetProgram());
-        Destroy(newRunner.GetComponent<LineView>());
 
         // Register the extensions
         foreach (var extension in extensions) {
@@ -142,7 +132,6 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         }
 
         // Register the done callback
-        newRunner.onDialogueComplete = new UnityEngine.Events.UnityEvent();
         newRunner.onDialogueComplete.AddListener(() => {
             HandleRunnerComplete(newRunner);
         });
@@ -164,12 +153,25 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
     public static void UserRequestedViewAdvancement() {
         foreach (var dialogueView in Cutscenes.Instance.dialogueViews) {
             dialogueView.UserRequestedViewAdvancement();
-            break;
         }
     }
 
-    public class StartedCutscene {
+    public class Started {
         public bool isRunning = false;
         public DialogueRunner runner = null;
+
+        public void SuspendUntil(System.Func<bool> suspendUntilCondition) {
+            if (!isRunning) return;
+            if (suspendUntilCondition()) {
+                return;
+            }
+            runner.SuspendUntil(suspendUntilCondition);
+        }
+
+        public void Kill() {
+            if (!isRunning) return;
+            isRunning = false;
+            runner.Stop();
+        }
     }
 }

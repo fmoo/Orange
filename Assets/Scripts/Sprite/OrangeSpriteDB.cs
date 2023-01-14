@@ -4,6 +4,10 @@ using System.Linq;
 using UnityEngine;
 using NaughtyAttributes;
 using SuperTiled2Unity;
+#if UNITY_EDITOR
+using UnityEditor;
+using System.IO;
+#endif
 
 [CreateAssetMenu(fileName = "SpritesDB", menuName = "Data/Sprite DB", order = 3)]
 public class OrangeSpriteDB : ScriptableObject {
@@ -25,7 +29,7 @@ public class OrangeSpriteDB : ScriptableObject {
             return sprites.FirstOrDefault(s => s.name == name);
         }
 
-        if (namedSprites.Count == 0) BuildIndex();
+        if (namedSprites.Count == 0 && sprites.Count != 0) BuildIndex();
         if (namedSprites.TryGetValue(name, out OrangeSpriteManagerSprite result)) {
             return result;
         }
@@ -37,11 +41,20 @@ public class OrangeSpriteDB : ScriptableObject {
             return animations.FirstOrDefault(s => s.name == name);
         }
 
-        if (namedAnimations.Count == 0) BuildIndex();
+        if (namedAnimations.Count == 0 && animations.Count != 0) BuildIndex();
         if (namedAnimations.TryGetValue(name, out OrangeSpriteManagerAnimation result)) {
             return result;
         }
         return null;
+    }
+
+    public bool HasAnimation(string name) {
+        if (!Application.isPlaying) {
+            return animations.FirstOrDefault(s => s.name == name) != null;
+        }
+
+        if (namedAnimations.Count == 0 && animations.Count != 0) BuildIndex();
+        return namedAnimations.ContainsKey(name);
     }
 
     private void OnValidate() {
@@ -82,6 +95,7 @@ public class OrangeSpriteDB : ScriptableObject {
                 }
             );
         }
+        EditorUtility.SetDirty(this);
     }
 
     public void EditorSetAnimation(
@@ -128,6 +142,8 @@ public class OrangeSpriteDB : ScriptableObject {
                 }
             );
         }
+        // Mark this asset dirty
+        EditorUtility.SetDirty(this);
     }
 
     public static NaughtyAttributes.DropdownList<string> GetEditorSpriteDropdown(OrangeSpriteDB db) {
@@ -156,6 +172,8 @@ public class OrangeSpriteDB : ScriptableObject {
     [BoxGroup("Sprite Import Configuration")]
     public bool flipImportedSprites = false;
     [BoxGroup("Sprite Import Configuration")]
+    public bool flipImportedSpritesY = false;
+    [BoxGroup("Sprite Import Configuration")]
     public bool loopImportedAnimation = true;
     [BoxGroup("Sprite Import Configuration")]
     public float importTimePerFrame = 0.1f;
@@ -170,11 +188,13 @@ public class OrangeSpriteDB : ScriptableObject {
             if (existingSprite != null) {
                 existingSprite.sprite = sprite;
                 existingSprite.flip = flipImportedSprites;
+                existingSprite.flipY = flipImportedSpritesY;
             } else {
                 sprites.Add(new OrangeSpriteManagerSprite() {
                     sprite = sprite,
                     name = name,
                     flip = flipImportedSprites,
+                    flipY = flipImportedSpritesY,
                 });
             }
             ii += 1;
@@ -199,6 +219,7 @@ public class OrangeSpriteDB : ScriptableObject {
         importAnimName = "";
         renameImportedSprites = true;
         flipImportedSprites = false;
+        flipImportedSpritesY = false;
     }
     [NaughtyAttributes.Button("CLEAR ALL")]
     public void Clear() {
@@ -217,8 +238,8 @@ public class OrangeSpriteDB : ScriptableObject {
 
     [NaughtyAttributes.Button("Reimport From TSX")]
     void EditorReimportFromTsx() {
-        var assetPath = UnityEditor.AssetDatabase.GetAssetPath(this);
-        UnityEditor.AssetDatabase.ImportAsset(assetPath.Replace(".asset", ".tsx"));
+        var assetPath = AssetDatabase.GetAssetPath(this);
+        AssetDatabase.ImportAsset(assetPath.Replace(".asset", ".tsx"));
     }
 
     [NaughtyAttributes.Button("Sort Sprites")]
@@ -226,6 +247,62 @@ public class OrangeSpriteDB : ScriptableObject {
         sprites.Sort((a, b) => a.name.CompareTo(b.name));
         animations.Sort((a, b) => a.name.CompareTo(b.name));
     }
+
+    [BoxGroup("Thumbnail Extraction")]
+    public string extractThumbnailFrame = "";
+    [BoxGroup("Thumbnail Extraction")]
+    public string extractThumbnailOutPath = "";
+    public bool EditorExtractThumbnail() {
+        if (extractThumbnailFrame == "") return false;
+        var sprite = GetSprite(extractThumbnailFrame);
+        if (sprite == null) {
+            return false;
+        }
+        var path = extractThumbnailOutPath;
+        if (path == "") {
+            path = UnityEditor.AssetDatabase.GetAssetPath(this);
+            path = path.Replace(".asset", ".png");
+        }
+
+        var oldThumbnailDefault = AssetDatabase.LoadAssetAtPath<DefaultAsset>(path);
+        if (oldThumbnailDefault != null) {
+            AssetDatabase.DeleteAsset(path);
+        }
+
+        var tex = sprite.sprite.texture;
+
+        // Make a readable copy of the texture without using GetPixels() or GetPixels32()
+        var oldRt = RenderTexture.active;
+        RenderTexture.active = RenderTexture.GetTemporary(tex.width, tex.height);
+        Graphics.Blit(tex, RenderTexture.active);
+        var readableTex = new Texture2D(tex.width, tex.height);
+        readableTex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
+        readableTex.Apply();
+        RenderTexture.active = oldRt;
+
+        var pixels = readableTex.GetPixels(
+            (int)sprite.sprite.textureRect.x,
+            (int)sprite.sprite.textureRect.y,
+            (int)sprite.sprite.textureRect.width,
+            (int)sprite.sprite.textureRect.height);
+
+        var outTex = new Texture2D(
+            (int)sprite.sprite.textureRect.width,
+            (int)sprite.sprite.textureRect.height,
+            TextureFormat.RGBA32,
+            false
+        );
+
+        outTex.SetPixels(pixels);
+        outTex.Apply();
+
+        var bytes = outTex.EncodeToPNG();
+        File.WriteAllBytes(path, bytes);
+        AssetDatabase.Refresh();
+
+        return true;
+    }
+
 #endif
 
 

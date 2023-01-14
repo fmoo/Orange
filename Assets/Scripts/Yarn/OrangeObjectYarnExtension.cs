@@ -4,10 +4,12 @@ using UnityEngine;
 using Yarn.Unity;
 using DG.Tweening;
 using UnityEngine.AddressableAssets;
+using SuperTiled2Unity;
 
 public class OrangeObjectYarnExtension : OrangeYarnExtension {
     public Transform refsContainer;
     public GameObject refPrefab;
+    public string prefabPrefix = "Assets/Prefabs/";
 
     public override void ConfigureRunner(DialogueRunner runner) {
         runner.AddCommandHandler<string>("Destroy", CommandDestroy);
@@ -15,6 +17,8 @@ public class OrangeObjectYarnExtension : OrangeYarnExtension {
 
         runner.AddFunction<string, string>("createRef", FunctionCreateRef);
         runner.AddFunction<string, string, string>("createPrefab", FunctionCreatePrefab);
+
+        runner.AddFunction<string, string, float>("distance", FunctionDistance);
 
         runner.AddFunction<string, string, bool, bool>("getBool", FunctionGetBool);
         runner.AddFunction<string, string, float, float>("getNum", FunctionGetNum);
@@ -43,16 +47,27 @@ public class OrangeObjectYarnExtension : OrangeYarnExtension {
 
     public string FunctionCreatePrefab(string prefabAddress, string dest) {
         var destRef = GameObject.Find(dest);
-        var addressablePrefab = Addressables.LoadAssetAsync<GameObject>(prefabAddress).WaitForCompletion();
+        var prefab = Addressables.LoadAssetAsync<GameObject>($"{prefabPrefix}{prefabAddress}").WaitForCompletion();
 
-        var prefabObj = Instantiate(addressablePrefab, refsContainer);
-        prefabObj.name = System.Guid.NewGuid().ToString();
+        var obj = Instantiate(prefab, refsContainer);
+        obj.name = System.Guid.NewGuid().ToString();
 
-        prefabObj.transform.position = destRef.transform.position;
-        return prefabObj.name;
+        obj.transform.position = destRef.transform.position;
+        return obj.name;
+    }
+
+    public float FunctionDistance(string object1, string object2) {
+        var obj1 = GameObject.Find(object1);
+        var obj2 = GameObject.Find(object2);
+        return Vector2.Distance(obj1.transform.position, obj2.transform.position);
     }
 
     public string FunctionGetStr(string objectId, string propName, string defaultValue = "") {
+        if (TryFindComponent<SuperCustomProperties>(objectId, out var props)) {
+            if (props.HasProp(propName)) {
+                return props.GetString(propName, defaultValue);
+            }
+        }
         if (TryFindComponent<OrangeSpriteAnimator>(objectId, out var animator)) {
             if (animator.sprites.strings.TryGetValue(propName, out var value)) {
                 return value;
@@ -61,6 +76,11 @@ public class OrangeObjectYarnExtension : OrangeYarnExtension {
         return defaultValue;
     }
     public float FunctionGetNum(string objectId, string propName, float defaultValue = 0f) {
+        if (TryFindComponent<SuperCustomProperties>(objectId, out var props)) {
+            if (props.HasProp(propName)) {
+                return props.GetFloat(propName, defaultValue);
+            }
+        }
         if (TryFindComponent<OrangeSpriteAnimator>(objectId, out var animator)) {
             if (animator.sprites.variables.TryGetValue(propName, out var value)) {
                 return value;
@@ -69,6 +89,11 @@ public class OrangeObjectYarnExtension : OrangeYarnExtension {
         return defaultValue;
     }
     public bool FunctionGetBool(string objectId, string propName, bool defaultValue = false) {
+        if (TryFindComponent<SuperCustomProperties>(objectId, out var props)) {
+            if (props.HasProp(propName)) {
+                return props.GetBool(propName, defaultValue);
+            }
+        }
         if (TryFindComponent<OrangeSpriteAnimator>(objectId, out var animator)) {
             if (animator.sprites.flags.TryGetValue(propName, out var value)) {
                 return value;

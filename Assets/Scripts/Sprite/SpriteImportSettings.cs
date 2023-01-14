@@ -21,8 +21,10 @@ public class SpriteImportSettings : ScriptableObject {
         public string frameOffsets;
         public bool loop;
         public bool flip;
+        public bool flipY;
         public float timePerFrame = 0.08f;
         public bool forceAnimationImport = false;
+        public bool stopOnMatch = true;
 
         public List<SpriteDBBatchGroup> groups;
         public List<ReplaceRule> replaceRules;
@@ -40,9 +42,11 @@ public class SpriteImportSettings : ScriptableObject {
         public string prefix;
         public int baseOffset;
         public bool flip;
+        public bool flipY;
     }
 
     public string autoCropThumbnailFrame;
     public OrangeSpriteDB spriteDB;
     public List<SpriteDBBatchReference> syncAssets;
+    public List<ReplaceRule> replaceRules;
 }

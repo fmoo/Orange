@@ -11,6 +11,10 @@ public class OrangeSpriteRenderer : MonoBehaviour {
 
     void OnValidate() {
         if (spriteRender == null) spriteRender = GetComponent<SpriteRenderer>();
+        Flip();
+    }
+
+    public void Flip() {
         if (spriteRender != null && sprites != null && spriteName != "") {
             var sprite = sprites.GetSprite(spriteName);
             if (sprite != null) sprite.SetRendererSprite(spriteRender);

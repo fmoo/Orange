@@ -6,9 +6,9 @@ public static class RectTransformExtensions {
 
     public static void Clear(this RectTransform rectTransform) {
         foreach (RectTransform child in rectTransform) {
-            if (child.GetComponent<OrangeCursor>() != null) {
-                continue;
-            }
+            // if (child.GetComponent<OrangeCursor>() != null) {
+            //     continue;
+            // }
             if (Application.isPlaying) {
                 Object.Destroy(child.gameObject);
             } else {

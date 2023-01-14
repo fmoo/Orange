@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SuperTiled2Unity;
+using UnityEngine.Experimental.Rendering.Universal;
 
 public class ParallaxLayerHandler : MonoBehaviour {
 	public SuperLayer layer;
@@ -10,14 +11,10 @@ public class ParallaxLayerHandler : MonoBehaviour {
 
 	public Vector3 origOffset;
 	public bool reset;
+	// public bool enableExtraSnapping = true;
 
 	void Start() {
 		origOffset = transform.localPosition;
-		var props = layer.GetComponent<SuperCustomProperties>();
-		if (layer is SuperImageLayer) {
-			var canvas = layer.GetComponent<Canvas>();
-			canvas.worldCamera = Camera.main;
-		}
 	}
 
 	void LateUpdate() {

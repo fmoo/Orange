@@ -30,7 +30,7 @@ public class ActionQueue : MonoBehaviour {
         }
 
         IEnumerator Wrap(Action<Action> work) {
-            System.Action onDone = () => {
+            Action onDone = () => {
                 isDone = true;
                 OnDone?.Invoke();
             };
@@ -41,6 +41,12 @@ public class ActionQueue : MonoBehaviour {
             }
         }
         IEnumerator Wrap(IEnumerator work) {
+            yield return work;
+            isDone = true;
+            OnDone?.Invoke();
+        }
+
+        IEnumerator Wrap(Coroutine work) {
             yield return work;
             isDone = true;
             OnDone?.Invoke();
@@ -58,6 +64,10 @@ public class ActionQueue : MonoBehaviour {
             asyncWork = Wrap(work);
             if (onDone != null) this.OnDone += onDone;
         }
+        public Item(Coroutine work, Action onDone = null) {
+            asyncWork = Wrap(work);
+            if (onDone != null) this.OnDone += onDone;
+        }
     }
 
     Coroutine activeCoroutine = null;
@@ -65,6 +75,13 @@ public class ActionQueue : MonoBehaviour {
     Queue<Item> inactiveItems = new Queue<Item>();
 
     public void Enqueue(Action work) {
+        inactiveItems.Enqueue(
+            new Item(work)
+        );
+        MaybeProcessItems();
+    }
+
+    public void Enqueue(Coroutine work) {
         inactiveItems.Enqueue(
             new Item(work)
         );

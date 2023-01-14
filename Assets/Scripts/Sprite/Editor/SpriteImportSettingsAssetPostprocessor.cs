@@ -75,9 +75,11 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
         // AssetDatabase.SaveAssets();
     }
 
+    const bool DEBUG = false;
+
     static void OnPostprocessSpritesReal(string texturePath, Texture2D texture, Sprite[] sprites) {
 
-        // Debug.LogError($"Postprocessing {texture.name} with {sprites.Length} sprites...");
+        if (DEBUG) Debug.LogError($"Postprocessing {texture.name} with {sprites.Length} sprites...");
 
         var importSettings = GetImportSettingsForPath(texturePath);
         if (importSettings == null) return;
@@ -87,7 +89,7 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
         try {
             sprites = sprites.OrderBy(x => int.Parse(digitPart.Match(x.name).Value)).ToArray();
         } catch (System.FormatException) {
-            Debug.LogWarning($"{texturePath} sprites did not contain _# numeric suffix.  Import may fail.");
+            if (DEBUG) Debug.LogWarning($"{texturePath} sprites did not contain _# numeric suffix.  Import may fail.");
         }
         bool doReimportThumbnail = false;
 
@@ -102,30 +104,43 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                 return;
             }
             if (!texture.name.Contains(syncAsset.textureMatch) && syncAsset.textureMatch != "*") {
+                if (DEBUG) Debug.Log("Name does not match and textureMatch != *");
                 continue;
             }
 
             var groups = syncAsset.groups.ToList();
             if (groups.Count == 0) groups.Add(new SpriteImportSettings.SpriteDBBatchGroup());
 
-            // Debug.Log($"Importing {syncAsset.importName} with {sprites.Length} sprites.");
+            if (DEBUG) Debug.Log($"Importing {syncAsset.importName} with {sprites.Length} sprites.");
 
             foreach (var group in groups) {
                 // TODO: Don't pull in duplicates if index is referenced multiple times.
                 IEnumerable<Sprite> importSprites;
-                if (syncAsset.frameOffsets != "" || syncAsset.textureMatch != "*") {
+                if (syncAsset.frameOffsets == "*" || syncAsset.textureMatch == "*") {
+                    importSprites = sprites;
+                    if (groups.Count > 1) {
+                        Debug.LogError("Got * for frame configuration, but there were multiple groups?!");
+                        break;
+                    }
+                } else {
                     importSprites = syncAsset.frameOffsets.Split(',').Select(s => int.Parse(s)).Select(ii => {
                         int index = ii + syncAsset.baseIndex + group.baseOffset;
                         if (index < 0 || index >= sprites.Length) {
-                            Debug.LogError($"Index {index} out of range when parsing frameOffset {ii} with baseIndex {syncAsset.baseIndex} and group offset {group.baseOffset} for {texturePath}", importSettings);
+                            if (DEBUG) Debug.LogError($"Index {index} out of range when parsing frameOffset {ii} with baseIndex {syncAsset.baseIndex} and group offset {group.baseOffset} for {texturePath}", importSettings);
+                            return null;
                         }
                         return sprites[index];
-                    });
-                } else {
-                    importSprites = sprites;
+                    }).Where(s => s != null);
+                    if (importSprites.Count() == 0) {
+                        if (DEBUG) Debug.Log("No sprites matched.  Skipping group.");
+                        continue;
+                    }
                 }
-                var importName = syncAsset.textureMatch == "*" ? texture.name : syncAsset.importName;
+                var importName = syncAsset.textureMatch == "*" ? texture.name : (string.IsNullOrWhiteSpace(syncAsset.importName) ? texture.name : syncAsset.importName);
                 foreach (var replaceRule in syncAsset.replaceRules) {
+                    importName = importName.Replace(replaceRule.match, replaceRule.replace);
+                }
+                foreach (var replaceRule in importSettings.replaceRules) {
                     importName = importName.Replace(replaceRule.match, replaceRule.replace);
                 }
 
@@ -136,29 +151,38 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                     doReimportThumbnail = true;
                 }
 
-                if (syncAsset.textureMatch == "*" && importSprites.Count() == 1 && !syncAsset.forceAnimationImport) {
+                // If there's only one sprite. don't import it as an animation?
+                if (importSprites.Count() == 1 && !syncAsset.forceAnimationImport) {
                     var existingSprite = importSettings.spriteDB.GetSprite(importName);
                     if (existingSprite != null) {
+                        if (DEBUG) Debug.LogError($"spriteDB already has sprite {importName}. Updating...", importSettings.spriteDB);
                         existingSprite.sprite = importSprites.First();
                     } else {
+                        if (DEBUG) Debug.LogError($"No sprite for {importName} in spriteDB. Adding...", importSettings.spriteDB);
                         importSettings.spriteDB.sprites.Add(
                             new OrangeSpriteManagerSprite() {
                                 name = importName,
                                 sprite = importSprites.First(),
+                                flip = syncAsset.flip ^ group.flip,
                             }
                         );
                     }
-                    EditorUtility.SetDirty(importSettings.spriteDB);
                 } else {
+                    if (DEBUG) Debug.LogError($"Creating animation for {importName}...", importSettings.spriteDB);
                     importSettings.spriteDB.importSprites = importSprites.ToArray();
                     importSettings.spriteDB.importTimePerFrame = syncAsset.timePerFrame;
                     importSettings.spriteDB.importAnimName = importName;
                     importSettings.spriteDB.loopImportedAnimation = syncAsset.loop;
                     importSettings.spriteDB.flipImportedSprites = syncAsset.flip ^ group.flip;
+                    importSettings.spriteDB.flipImportedSpritesY = syncAsset.flipY ^ group.flipY;
                     importSettings.spriteDB.DoImportSprites();
-                    EditorUtility.SetDirty(importSettings.spriteDB);
                 }
+                EditorUtility.SetDirty(importSettings.spriteDB);
+            }
 
+            // Break Only apply the first matching ruleset
+            if (syncAsset.stopOnMatch) {
+                break;
             }
         }
 

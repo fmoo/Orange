@@ -7,9 +7,11 @@ public class OrangeSpriteManagerSprite {
     public string name;
     public Sprite sprite;
     public bool flip = false;
+    public bool flipY = false;
 
     public void SetRendererSprite(SpriteRenderer renderer) {
         renderer.flipX = flip;
+        renderer.flipY = flipY;
         renderer.sprite = sprite;
     }
     public void SetUIImageSprite(UnityEngine.UI.Image uiImage) {

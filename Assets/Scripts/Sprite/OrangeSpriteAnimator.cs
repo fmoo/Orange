@@ -23,14 +23,19 @@ public class OrangeSpriteAnimator : MonoBehaviour {
     }
 
     public bool HasAnimation(string animationName) {
-        return sprites != null && sprites.GetAnimation(animationName) != null;
+        return sprites != null && sprites.HasAnimation(animationName);
     }
 
-    public void SetAnimation(string animationName, bool skipReset = false) {
+    bool lastSetAnimationResult = false;
+    public bool SetAnimation(string animationName, bool skipReset = false) {
         enabled = true;
+        if (sprites == null) {
+            Debug.LogError($"No sprites set on {name}'s animator", this);
+            return false;
+        }
         currentAnimation = sprites.GetAnimation(animationName);
         currentAnimationSprites = sprites;
-        if (animationName == this.animationName) return;
+        if (animationName == this.animationName) return lastSetAnimationResult;
         // Debug.Log($"SetAnimation called with {animationName} skipReset={skipReset}", this);
         var lastDone = onAnimationDone;
         onAnimationDone = null;
@@ -41,9 +46,11 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         stallTime = 0f;
         this.animationName = currentAnimation != null ? animationName : "";
         OrangeSpriteManagerSprite sprite = null;
-        if (currentAnimation == null)
+        if (currentAnimation == null) {
             Debug.LogError($"Animation not found for {name}'s '{animationName}' from {sprites?.name}", (Object)sprites ?? this);
-        else {
+            lastSetAnimationResult = false;
+        } else {
+            lastSetAnimationResult = true;
             sprite = currentAnimation.GetSpriteForTime(timeElapsed);
             if (sprite == null) {
                 sprite = currentAnimation.GetLastSprite();
@@ -51,6 +58,7 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         }
         if (sprite != null)
             SetSprite(sprite);
+        return lastSetAnimationResult;
     }
 
     public void ResetAnimation(string animationName) {
