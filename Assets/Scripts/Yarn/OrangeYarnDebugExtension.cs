@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class OrangeYarnDebugExtension : OrangeYarnExtension {
     public override void ConfigureRunner(DialogueRunner runner) {
-        runner.AddCommandHandler<string, string, string, string, string, string>("TODO", CommandLog);
+        runner.AddCommandHandler<string, string, string, string, string, string>("TODO", CommandTodo);
         runner.AddCommandHandler<string, string, string, string, string, string>("Log", CommandLog);
-        runner.AddCommandHandler<string, string, string, string, string, string>("Warn", CommandLog);
-        runner.AddCommandHandler<string, string, string, string, string, string>("Error", CommandLog);
+        runner.AddCommandHandler<string, string, string, string, string, string>("Warn", CommandWarn);
+        runner.AddCommandHandler<string, string, string, string, string, string>("Error", CommandError);
     }
 
     public void CommandTodo(string arg1, string arg2 = "", string arg3 = "", string arg4 = "", string arg5 = "", string arg6 = "") {
