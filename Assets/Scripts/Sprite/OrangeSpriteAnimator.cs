@@ -26,8 +26,19 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         return sprites != null && sprites.HasAnimation(animationName);
     }
 
+    public bool HasFrame(string frameName) {
+        return sprites != null && sprites.HasFrame(frameName);
+    }
+
+    void InvokeAnimationDone() {
+        var lastDone = onAnimationDone;
+        onAnimationDone = null;
+        lastDone?.Invoke();
+    }
+
     bool lastSetAnimationResult = false;
     public bool SetAnimation(string animationName, bool skipReset = false) {
+        // Debug.Log($"[{Time.realtimeSinceStartupAsDouble}] SetAnimation called on {name} with {animationName} skipReset={skipReset}", this);
         enabled = true;
         if (sprites == null) {
             Debug.LogError($"No sprites set on {name}'s animator", this);
@@ -37,10 +48,9 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         currentAnimationSprites = sprites;
         if (animationName == this.animationName) return lastSetAnimationResult;
         // Debug.Log($"SetAnimation called with {animationName} skipReset={skipReset}", this);
-        var lastDone = onAnimationDone;
-        onAnimationDone = null;
-        lastDone?.Invoke();
+
         if (!skipReset && (resetTimeOnChange || !(currentAnimation?.loop ?? false))) {
+            InvokeAnimationDone();
             timeElapsed = 0f;
         }
         stallTime = 0f;
@@ -114,6 +124,15 @@ public class OrangeSpriteAnimator : MonoBehaviour {
         if (image == null)
             image = GetComponent<UnityEngine.UI.Image>();
         SetAnimation(animationName);
+    }
+
+    public void SetSprite(string spriteName) {
+        var sprite = sprites.GetSprite(spriteName);
+        if (sprite == null) {
+            Debug.LogError($"No sprite for {spriteName}!", this);
+        } else {
+            SetSprite(sprite);
+        }
     }
 
     void SetSprite(OrangeSpriteManagerSprite sprite) {

@@ -57,6 +57,15 @@ public class OrangeSpriteDB : ScriptableObject {
         return namedAnimations.ContainsKey(name);
     }
 
+    public bool HasFrame(string name) {
+        if (!Application.isPlaying) {
+            return sprites.FirstOrDefault(s => s.name == name) != null;
+        }
+
+        if (namedSprites.Count == 0 && sprites.Count != 0) BuildIndex();
+        return namedSprites.ContainsKey(name);
+    }
+
     private void OnValidate() {
         BuildIndex();
     }
