@@ -6,9 +6,15 @@ using System.Collections.Generic;
 
 public class OrangeCallScriptExtension : OrangeYarnExtension {
     public override void ConfigureRunner(DialogueRunner runner) {
-        runner.AddScopedCommandHandler<string, string>("Call", CallCommand);
-        runner.AddScopedCommandHandler<string>("CallBG", CallBGCommand);
+        Coroutine CallCommand(string scriptName, string ownerName="") {
+            return this.CallCommand(runner, scriptName, ownerName);
+        }
+        runner.AddCommandHandler<string, string>("Call", CallCommand);
 
+        void CallBGCommand(string scriptName) {
+            this.CallBGCommand(runner, scriptName);
+        }
+        runner.AddCommandHandler<string>("CallBG", CallBGCommand);
     }
 
     Dictionary<string, object> GetVariablesFromRunner(DialogueRunner runner) {
@@ -28,9 +34,9 @@ public class OrangeCallScriptExtension : OrangeYarnExtension {
     }
 
     /// <yarncommand>Call</yarncommand>
-    Coroutine CallCommand(DialogueRunner runner, string scriptName, string ownerName = null) {
+    Coroutine CallCommand(DialogueRunner runner, string scriptName, string ownerName = "") {
         GameObject owner = null;
-        if (ownerName != null) owner = GameObject.Find(ownerName);
+        if (!string.IsNullOrWhiteSpace(ownerName)) owner = GameObject.Find(ownerName);
         if (owner == null) owner = runner.gameObject;
         var ownerRunner = owner.GetComponent<MonoBehaviour>();
         Debug.Assert(ownerRunner != null, owner);
