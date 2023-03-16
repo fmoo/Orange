@@ -51,7 +51,8 @@ public static class GridExtensions {
 
     public static IEnumerable<T> GetTiles<T>(this Grid grid, Vector3Int position) where T : TileBase {
         foreach (var tilemap in grid.GetComponentsInChildren<Tilemap>()) {
-            yield return tilemap.GetTile<T>(position);
+            var tile = tilemap.GetTile<T>(position);
+            if (tile != null) yield return tile;
         }
     }
 }
