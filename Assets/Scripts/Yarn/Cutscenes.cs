@@ -145,8 +145,9 @@ public class Cutscenes : MonoBehaviourSingleton<Cutscenes> {
         }
         var action = dialogueDoneCallbacks[runner];
         dialogueDoneCallbacks.Remove(runner);
+        runner.Stop();
+        runner.StopAllCoroutines();
         runnerPool.Enqueue(runner);
-        // TODO: Any other cleanup.
         action?.Invoke();
     }
 
