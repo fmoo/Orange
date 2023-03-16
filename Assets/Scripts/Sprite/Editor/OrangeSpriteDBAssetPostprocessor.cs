@@ -1,11 +1,11 @@
-using UnityEditor;
-using UnityEngine;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using SuperTiled2Unity.Editor;
+using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEngine;
 
 
 public class OrangeSpriteDBAssetPostprocessor : AssetPostprocessor {
