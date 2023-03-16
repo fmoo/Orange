@@ -9,7 +9,6 @@ public class SimpleParallax : MonoBehaviour {
 
     public Camera targetCamera;
     public RawImage rawImage;
-    public bool rotationMode = false;
 
     void OnValidate() {
         if (targetCamera == null)
@@ -25,13 +24,8 @@ public class SimpleParallax : MonoBehaviour {
     public void Update() {
         if (rawImage == null || targetCamera == null) return;
         var uvRect = rawImage.uvRect;
-        if (applyScroll.x) {
-            if (rotationMode) {
-                uvRect.x = targetCamera.transform.rotation.eulerAngles.y / 360f * scrollFactor.x;
-            } else {
-                uvRect.x = scrollFactor.x * targetCamera.transform.position.x;
-            }
-        }
+        if (applyScroll.x)
+            uvRect.x = scrollFactor.x * targetCamera.transform.position.x;
         if (applyScroll.y)
             uvRect.y = scrollFactor.y * targetCamera.transform.position.y;
         rawImage.uvRect = uvRect;
