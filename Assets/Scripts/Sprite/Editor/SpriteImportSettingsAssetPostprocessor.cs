@@ -180,6 +180,8 @@ public class SpriteImportSettingsAssetPostprocessor : AssetPostprocessor {
                 EditorUtility.SetDirty(importSettings.spriteDB);
             }
 
+            importSettings.spriteDB.EditorSortSprites();
+
             // Break Only apply the first matching ruleset
             if (syncAsset.stopOnMatch) {
                 break;

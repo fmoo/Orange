@@ -252,7 +252,7 @@ public class OrangeSpriteDB : ScriptableObject {
     }
 
     [NaughtyAttributes.Button("Sort Sprites")]
-    void EditorSortSprites() {
+    public void EditorSortSprites() {
         sprites.Sort((a, b) => a.name.CompareTo(b.name));
         animations.Sort((a, b) => a.name.CompareTo(b.name));
     }
