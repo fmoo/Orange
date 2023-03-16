@@ -13,6 +13,8 @@ public class OrangeYarnUtilityExtension : OrangeYarnExtension {
     public override void ConfigureRunner(DialogueRunner runner) {
         runner.AddFunction<int, int, int>("randomInt", FunctionRandomInt);
         runner.AddFunction<float, float, float>("random", FunctionRandom);
+        runner.AddFunction<float>("time", FunctionTime);
+        runner.AddFunction<float>("unscaledTime", FunctionUnscaledTime);
     }
 
     int FunctionRandomInt(int lowerBound, int upperBound) {
@@ -21,5 +23,13 @@ public class OrangeYarnUtilityExtension : OrangeYarnExtension {
 
     float FunctionRandom(float lowerBound, float upperBound) {
         return Random.Range(lowerBound, upperBound);
+    }
+
+    float FunctionTime() {
+        return Time.timeSinceLevelLoad;
+    }
+
+    float FunctionUnscaledTime() {
+        return Time.realtimeSinceStartup;
     }
 }
