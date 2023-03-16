@@ -6,13 +6,13 @@ public class SubscribableInMemoryVariableStorage : InMemoryVariableStorage {
     public VariableUpdateChannel channel;
 
     void Init() {
-        if (channel != null && channel.GetValue == null) {
-            channel.GetValue = (k) => {
+        if (channel != null) {
+            channel.Init((k) => {
                 if (TryGetValue<object>(k, out var result)) {
                     return result;
                 }
                 return null;
-            };
+            });
         }
     }
     void Awake() {

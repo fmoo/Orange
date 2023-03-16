@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class AutoEnableVariableUpdateHandler : AutoVariableUpdateHandler {
     public override bool ShouldBeEnabled() {
-        return (bool)channel.GetValue(variableName);
+        if (channel == null) return false;
+        var result = channel.GetValue(variableName);
+        return result != null ? (bool)result : false;
     }
 }
