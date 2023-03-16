@@ -51,7 +51,7 @@ public class OrangeSpriteDBAssetPostprocessor : AssetPostprocessor {
         if (spriteDB == null) {
             bool shouldCreate = false;
             foreach (var tile in tileset.m_Tiles) {
-                if (tile.HasProp("spriteName") || tile.HasProp("animationName")) {
+                if (tile.GetStringProp("spriteName") != "" || tile.GetStringProp("animationName") != "") {
                     shouldCreate = true;
                     break;
                 }

@@ -5,7 +5,7 @@ using SuperTiled2Unity.Editor;
 
 
 public static class TiledExtensions {
-    public static bool HasProp(this SuperCustomProperties properties, string name) {
+    public static bool Contains(this SuperCustomProperties properties, string name) {
         return properties.TryGetCustomProperty(name, out _);
     }
 
@@ -37,8 +37,7 @@ public static class TiledExtensions {
         return defaultValue;
     }
 
-
-    public static bool HasProp(this SuperTile tile, string name) {
+    public static bool ContainsProp(this SuperTile tile, string name) {
         return tile.m_CustomProperties.Find(x => x.m_Name == name) != null;
     }
 

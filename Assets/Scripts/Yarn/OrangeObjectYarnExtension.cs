@@ -64,7 +64,7 @@ public class OrangeObjectYarnExtension : OrangeYarnExtension {
 
     public string FunctionGetStr(string objectId, string propName, string defaultValue = "") {
         if (TryFindComponent<SuperCustomProperties>(objectId, out var props)) {
-            if (props.HasProp(propName)) {
+            if (props.Contains(propName)) {
                 return props.GetString(propName, defaultValue);
             }
         }
@@ -77,7 +77,7 @@ public class OrangeObjectYarnExtension : OrangeYarnExtension {
     }
     public float FunctionGetNum(string objectId, string propName, float defaultValue = 0f) {
         if (TryFindComponent<SuperCustomProperties>(objectId, out var props)) {
-            if (props.HasProp(propName)) {
+            if (props.Contains(propName)) {
                 return props.GetFloat(propName, defaultValue);
             }
         }
@@ -90,7 +90,7 @@ public class OrangeObjectYarnExtension : OrangeYarnExtension {
     }
     public bool FunctionGetBool(string objectId, string propName, bool defaultValue = false) {
         if (TryFindComponent<SuperCustomProperties>(objectId, out var props)) {
-            if (props.HasProp(propName)) {
+            if (props.Contains(propName)) {
                 return props.GetBool(propName, defaultValue);
             }
         }
