@@ -1,0 +1,35 @@
+{
+    "name": "com.ruibalweb.orange",
+    "version": "0.0.1",
+    "description": "A set of scripts and other things for prototyping apps in Unity",
+    "displayName": "Orange Unity Prototyping Toolkit",
+    "unity": "2019.4",
+    "keywords": [
+        "unity",
+        "unity3d",
+        "upm",
+        "utility"
+    ],
+    "homepage": "https://github.com/fmoo/Orange.git",
+    "bugs": {
+        "url": "https://github.com/fmoo/Orange/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/fmoo/Orange.git"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Peter Ruibal",
+        "email": "ruibalp@gmail.com",
+        "url": "https://github.com/fmoo/"
+    },
+    "dependencies": {
+        "com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm",
+        "com.neuecc.unirx": "https://github.com/neuecc/UniRx.git?path=Assets/Plugins/UniRx/Scripts",
+        "dev.yarnspinner.unity": "https://github.com/fmoo/YarnSpinner-Unity.git#d14c9804de2872e8a64a373c53ff4d14796e65fd"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    }
+}
