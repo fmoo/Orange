@@ -9,10 +9,7 @@
         "Unity.Addressables",
         "Unity.ResourceManager",
         "Unity.2D.PixelPerfect",
-        "SuperTiled2Unity",
-        "YarnSpinner.Unity.Editor",
-        "Unity.Addressables.Editor",
-        "SuperTiled2UnityEditor"
+        "SuperTiled2Unity"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
