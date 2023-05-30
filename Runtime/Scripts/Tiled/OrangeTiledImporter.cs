@@ -28,6 +28,9 @@ abstract public class OrangeTiledImporter : CustomTmxImporter {
             return true;
         }
         if (layer is SuperImageLayer imageLayer) {
+            if (imageLayer.m_RepeatX || imageLayer.m_RepeatY) {
+                return true;
+            }
             var props = imageLayer.GetComponent<SuperCustomProperties>();
             if (props == null) return false;
             CustomProperty prop;
@@ -54,10 +57,9 @@ abstract public class OrangeTiledImporter : CustomTmxImporter {
         Vector2 autoscrollSpeed = Vector2.zero;
         autoscrollSpeed.x = props.GetFloat("autoscrollX", 0f);
         autoscrollSpeed.y = props.GetFloat("autoscrollY", 0f);
-        var cameraScroll = new Vector2(layer.m_ParallaxX, layer.m_ParallaxY);
 
         var parallaxEffect = layer.gameObject.AddComponent<ParallaxLayerHandler>();
-        parallaxEffect.autoScrollSpeed  = autoscrollSpeed;
+        parallaxEffect.autoScrollSpeed = autoscrollSpeed;
         if (layer is SuperImageLayer imageLayer) {
             parallaxEffect.repeatsX = imageLayer.m_RepeatX;
             parallaxEffect.repeatsY = imageLayer.m_RepeatY;

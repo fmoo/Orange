@@ -19,6 +19,8 @@ public class ParallaxLayerHandler : MonoBehaviour {
 
     void Start() {
         origOffset = transform.localPosition;
+
+        if (!spriteRenderer) return;
         origSize = spriteRenderer.size;
         halfOrigSize = origSize / 2f;
         if (repeatsX || repeatsY) {
@@ -95,6 +97,8 @@ public class ParallaxLayerHandler : MonoBehaviour {
             // Compare the center of the sprite to the camera's position.
             var cameraCenter = camera.transform.position;
             var spriteCenter = layer.transform.position + halfSize;
+            var spriteCenterBefore = spriteCenter;
+
             if (repeatsX) {
                 // If the sprite is to the left of the camera, move it to the right.
                 while (spriteCenter.x < cameraCenter.x - origSize.x) {
@@ -143,7 +147,12 @@ public class ParallaxLayerHandler : MonoBehaviour {
                         break;
                     }
                 }
+
+                // Sprites draw down instead of up, so add the sprite height to the y position.
+                v3.y += spriteRenderer.size.y;
             }
+
+            // Debug.Log($"[{layer.name} adjust] spriteCenter={spriteCenterBefore}->{spriteCenter} camera={cameraCenter} size={origSize}->{spriteRenderer.size}", this);
         }
 
         layer.transform.position = v3;
